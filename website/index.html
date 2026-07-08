@@ -321,7 +321,8 @@ function renderOverview(){
   const tools = s.tools;
   const TW = REF();
   const TWtx = REF()+"'s transcript";
-  let h = `<p class="lead">Every tool re-annotates the ${s.n_variants.toLocaleString()} unique <b>${esc(s.truth_set)}</b> variants and is
+  let h = `<p class="onco-banner" style="border-color:var(--accent);background:color-mix(in srgb, var(--accent) 8%, transparent)">⚠️ <b>Preliminary / work in progress</b> — early exploratory results, not a finished or validated evaluation (expect errors). <b>Not an independent benchmark:</b> cBioPortal develops <b>Genome Nexus</b>, one of the tools here. See <a onclick="switchView('about')" style="color:var(--accent);cursor:pointer">About</a>.</p>`;
+  h += `<p class="lead">Every tool re-annotates the ${s.n_variants.toLocaleString()} unique <b>${esc(s.truth_set)}</b> variants and is
     scored against <b>${esc(TRACKS[TRACK].refLong)}</b>. This is the <em>published</em> annotation, not absolute ground truth —
     so a low score can mean a different (equally defensible) convention, not an error. The benchmark
     separates <b>annotation</b> (is a transcript's effect right?) from <b>selection</b> (does the tool pick ${TWtx}?) —
@@ -897,9 +898,10 @@ function renderAbout(){
     ? "whose annotations come from MSK's production Genome Nexus pipeline (VEP-based, with MSK's clinical isoform overrides)"
     : "whose annotations come from the GDC's production VEP pipeline (GENCODE canonical selection, no MSK overrides)";
   let h = `<div class="card"><h2>About this benchmark — ${esc(TRACKS[TRACK].label)}</h2>
-  <p class="lead">An independent comparison of variant-effect tools against the <b>${esc(s.truth_set)}</b> truth set
+  <p class="onco-banner" style="border-color:var(--accent);background:color-mix(in srgb, var(--accent) 8%, transparent)">⚠️ <b>Preliminary / work in progress.</b> Early exploratory results, not a finished or validated evaluation — expect errors. And this is <b>not an independent benchmark</b>: cBioPortal develops <b>Genome Nexus</b>, one of the tools compared here. Read it as a starting point, not a ranking.</p>
+  <p class="lead">A preliminary comparison of variant-effect tools against the <b>${esc(s.truth_set)}</b> reference set
   (${s.n_variants.toLocaleString()} unique variants, ${esc(s.genome)}), ${truthDesc}.
-  ${g37 ? '' : "This is the second of two tracks — see the GRCh37 · MSK-IMPACT track (top right) for MSK's clinical-isoform truth."}</p>
+  ${g37 ? '' : "This is one of several tracks — see the top-right selector for the others."}</p>
   <h3>Two-stage design</h3>
   <p class="lead"><b>Stage 1 — Annotation:</b> for every transcript a tool reports, is the effect (HGVSp, class) right?
   Scored on <b>${esc(REF())}'s transcript</b>, independent of which transcript the tool would pick. It also measures

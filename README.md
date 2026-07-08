@@ -1,6 +1,12 @@
 # cBioPortal Onco Variant Effect Benchmark
 
-An **independent, reproducible benchmark** of variant annotation / effect tools —
+> **⚠️ Preliminary / work in progress.** These are early, exploratory results — not a
+> finished, validated, or peer-reviewed evaluation — and may contain errors. Also note
+> that cBioPortal develops [Genome Nexus](https://www.genomenexus.org), one of the tools
+> compared here, so this is **not** an independent third-party benchmark. Read the numbers
+> as a starting point for discussion, not a ranking.
+
+A **preliminary, reproducible benchmark** of variant annotation / effect tools —
 Genome Nexus, Ensembl VEP (+ vcf2maf), fastVEP (+ mafsmith), vibe-vep, and
 OpenCRAVAT — scored against **published** cancer reference datasets.
 
