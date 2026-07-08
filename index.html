@@ -321,7 +321,7 @@ function renderOverview(){
   const tools = s.tools;
   const TW = REF();
   const TWtx = REF()+"'s transcript";
-  let h = `<p class="onco-banner" style="border-color:var(--accent);background:color-mix(in srgb, var(--accent) 8%, transparent)">⚠️ <b>Preliminary / work in progress</b> — early exploratory results, not a finished or validated evaluation (expect errors). <b>Not an independent benchmark:</b> cBioPortal develops <b>Genome Nexus</b>, one of the tools here. See <a onclick="switchView('about')" style="color:var(--accent);cursor:pointer">About</a>.</p>`;
+  let h = `<p class="onco-banner" style="border-color:var(--accent);background:color-mix(in srgb, var(--accent) 8%, transparent)">⚠️ <b>Preliminary / work in progress</b> — early exploratory results, not a finished or validated evaluation (expect errors). cBioPortal harmonizes variant annotation across studies with <b>Genome Nexus</b> — re-annotating mutation <em>effects</em> (gene, protein change, transcript), not re-calling mutations (those come from each study's authors). As new annotation tools and versions appear, this benchmark helps gauge how they perform. See <a onclick="switchView('about')" style="color:var(--accent);cursor:pointer">About</a>.</p>`;
   h += `<p class="lead">Every tool re-annotates the ${s.n_variants.toLocaleString()} unique <b>${esc(s.truth_set)}</b> variants and is
     scored against <b>${esc(TRACKS[TRACK].refLong)}</b>. This is the <em>published</em> annotation, not absolute ground truth —
     so a low score can mean a different (equally defensible) convention, not an error. The benchmark
@@ -898,7 +898,11 @@ function renderAbout(){
     ? "whose annotations come from MSK's production Genome Nexus pipeline (VEP-based, with MSK's clinical isoform overrides)"
     : "whose annotations come from the GDC's production VEP pipeline (GENCODE canonical selection, no MSK overrides)";
   let h = `<div class="card"><h2>About this benchmark — ${esc(TRACKS[TRACK].label)}</h2>
-  <p class="onco-banner" style="border-color:var(--accent);background:color-mix(in srgb, var(--accent) 8%, transparent)">⚠️ <b>Preliminary / work in progress.</b> Early exploratory results, not a finished or validated evaluation — expect errors. And this is <b>not an independent benchmark</b>: cBioPortal develops <b>Genome Nexus</b>, one of the tools compared here. Read it as a starting point, not a ranking.</p>
+  <p class="onco-banner" style="border-color:var(--accent);background:color-mix(in srgb, var(--accent) 8%, transparent)">⚠️ <b>Preliminary / work in progress.</b> Early exploratory results, not a finished or validated evaluation — expect errors.</p>
+  <p class="lead"><b>Why this exists.</b> cBioPortal harmonizes variant annotation across the many studies it hosts using
+  <b>Genome Nexus</b> — it re-annotates the <em>effect</em> of each mutation (gene, protein change, transcript, consequence),
+  but does <b>not</b> re-call mutations (the variant calls come from each study's authors). As new annotation tools and versions
+  have appeared, we need a way to check how well they perform relative to the current pipeline — that's what this benchmark is for.</p>
   <p class="lead">A preliminary comparison of variant-effect tools against the <b>${esc(s.truth_set)}</b> reference set
   (${s.n_variants.toLocaleString()} unique variants, ${esc(s.genome)}), ${truthDesc}.
   ${g37 ? '' : "This is one of several tracks — see the top-right selector for the others."}</p>
