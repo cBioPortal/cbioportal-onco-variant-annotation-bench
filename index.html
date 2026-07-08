@@ -148,6 +148,7 @@ code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px;
     <div>
       <h1>cBioPortal Onco Variant Effect Benchmark</h1>
       <div class="sub" id="subhead">Loading…</div>
+      <div class="sub" style="margin-top:4px"><a href="https://github.com/cBioPortal/cbioportal-onco-variant-annotation-bench" target="_blank" rel="noopener" style="color:var(--accent)">Code on GitHub ↗</a> · <a href="https://github.com/cBioPortal/cbioportal-onco-variant-annotation-bench#contributing" target="_blank" rel="noopener" style="color:var(--accent)">contribute a tool or dataset</a></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
       <div class="track-sel" id="track-sel"></div>
@@ -916,6 +917,22 @@ function renderAbout(){
   A property of the transcript-selection policy layered on the annotator.</p>
   <h3>Tools</h3>
   <ul class="lead">${s.tools.map(t=>`<li><b>${esc(t.label)}</b> — ${esc(t.ver?t.ver.software:'')}</li>`).join("")}</ul>
+  <h3>Code &amp; contributing</h3>
+  <p class="lead">Everything is open source and reproducible on GitHub:
+  <a href="https://github.com/cBioPortal/cbioportal-onco-variant-annotation-bench" target="_blank" rel="noopener"><b>cBioPortal/cbioportal-onco-variant-annotation-bench</b> ↗</a>.
+  The pipeline is deliberately tool-agnostic — every tool is reduced to one normalized per-transcript record, so adding a new
+  tool or dataset is a small, self-contained change you can propose with a pull request.</p>
+  <ul class="lead">
+  <li><b>Add a tool.</b> Write a parser in <code>benchmark/annotators/</code> that maps your tool's output to the shared schema
+  (<code>benchmark/common.py</code> — gene, transcript, HGVSp/HGVSc, variant class, consequence), register it in the tool list,
+  then re-run <code>compare_transcripts.py</code> (Stage&nbsp;1) + <code>compare_pick.py</code> (Stage&nbsp;2) and
+  <code>build_site_data.py</code>. Open a PR and it shows up in the leaderboard, compare view, and per-gene drill-downs.</li>
+  <li><b>Add a dataset.</b> Any MAF with the core columns works: <code>extract_input.py</code> builds the truth + input,
+  then add a track entry (reference label, genome, isoform-override policy). Great for testing new panels or cohorts.</li>
+  <li><b>Report a discrepancy.</b> If a "mismatch" is actually a reference-data problem (e.g. a malformed value), open an issue —
+  that feedback improves the underlying annotations too.</li>
+  </ul>
+  <p class="lead small">See the repo's <a href="https://github.com/cBioPortal/cbioportal-onco-variant-annotation-bench#readme" target="_blank" rel="noopener">README</a> for the exact commands. Contributions and corrections are welcome — this is a work in progress.</p>
   <h3>Headline finding</h3>
   ${g37 ? `<p class="lead">Annotation is largely a solved problem (${esc(REF())}'s transcript is present ~100% of the time and
   its protein change agrees ~94% on that transcript). The differences between tools are dominated by
