@@ -1,10 +1,14 @@
 # cBioPortal Onco Variant Effect Benchmark
 
-> **⚠️ Preliminary / work in progress.** These are early, exploratory results — not a
-> finished, validated, or peer-reviewed evaluation — and may contain errors. Also note
-> that cBioPortal develops [Genome Nexus](https://www.genomenexus.org), one of the tools
-> compared here, so this is **not** an independent third-party benchmark. Read the numbers
-> as a starting point for discussion, not a ranking.
+> **⚠️ Preliminary / work in progress.** Early, exploratory results — not a finished,
+> validated, or peer-reviewed evaluation — and may contain errors.
+
+**Why this exists.** cBioPortal harmonizes variant annotation across the many studies it
+hosts using [Genome Nexus](https://www.genomenexus.org) — it re-annotates the *effect* of
+each mutation (gene, protein change, transcript, consequence), but does **not** re-call
+mutations (the variant calls come from each study's authors). As new annotation tools and
+versions have appeared, we need a way to gauge how well they perform relative to the current
+pipeline — that's what this benchmark is for.
 
 A **preliminary, reproducible benchmark** of variant annotation / effect tools —
 Genome Nexus, Ensembl VEP (+ vcf2maf), fastVEP (+ mafsmith), vibe-vep, and
