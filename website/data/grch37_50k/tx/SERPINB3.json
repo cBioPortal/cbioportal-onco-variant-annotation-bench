@@ -1,0 +1,1 @@
+{"18:61325866:61325866:T:A": [{"tx": "ENST00000283752", "g": "SERPINB3", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["genome_nexus", "vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}, {"tx": "ENST00000332821", "g": "SERPINB3", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": [], "t": 0}]}

@@ -1,0 +1,1 @@
+{"14:22105779:22105779:G:T": [{"tx": "ENST00000390453", "g": "TRAV24", "hp": "p.E92D", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

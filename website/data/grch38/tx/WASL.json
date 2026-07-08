@@ -1,0 +1,1 @@
+{"7:123694714:123694714:C:A": [{"tx": "ENST00000223023", "g": "WASL", "hp": "", "cl": "Splice_Site", "csq": "splice_donor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

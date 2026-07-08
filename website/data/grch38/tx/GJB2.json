@@ -1,0 +1,1 @@
+{"13:20189501:20189501:G:A": [{"tx": "ENST00000382844", "g": "GJB2", "hp": "p.V27=", "cl": "Silent", "csq": "synonymous_variant", "by": ["genome_nexus"], "t": 1}, {"tx": "ENST00000382848", "g": "GJB2", "hp": "p.V27=", "cl": "Silent", "csq": "synonymous_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}]}

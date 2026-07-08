@@ -1,0 +1,1 @@
+{"1:211578428:211578429:CG:A": [{"tx": "ENST00000367001", "g": "SLC30A1", "hp": "p.R62Lfs*105", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000567907", "g": "", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 0}]}

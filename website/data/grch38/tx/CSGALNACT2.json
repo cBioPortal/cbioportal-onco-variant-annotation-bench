@@ -1,0 +1,1 @@
+{"10:43155150:43155150:A:G": [{"tx": "ENST00000374466", "g": "CSGALNACT2", "hp": "p.M1V", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

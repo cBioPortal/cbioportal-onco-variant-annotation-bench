@@ -1,0 +1,1 @@
+{"5:40852594:40852595:-:G": [{"tx": "ENST00000381677", "g": "CARD6", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": [], "t": 0}, {"tx": "ENST00000254691", "g": "CARD6", "hp": "p.A423Gfs*42", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"13:54312028:54312028:G:C": [{"tx": "ENST00000637311", "g": "", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

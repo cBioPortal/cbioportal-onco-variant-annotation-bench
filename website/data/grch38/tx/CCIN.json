@@ -1,0 +1,1 @@
+{"9:36171044:36171045:TG:-": [{"tx": "ENST00000335119", "g": "CCIN", "hp": "p.S516Pfs*?", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

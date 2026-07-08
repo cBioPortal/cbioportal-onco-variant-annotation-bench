@@ -1,0 +1,1 @@
+{"11:58266941:58266941:C:A": [{"tx": "ENST00000395079", "g": "OR10W1", "hp": "p.Y306ext*?", "cl": "Nonstop_Mutation", "csq": "stop_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

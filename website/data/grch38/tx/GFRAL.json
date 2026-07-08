@@ -1,0 +1,1 @@
+{"6:55399439:55399439:T:C": [{"tx": "ENST00000340465", "g": "GFRAL", "hp": "p.L373=", "cl": "Splice_Region", "csq": "splice_region_variant,synonymous_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"9:116187155:116187155:G:A": [{"tx": "ENST00000328252", "g": "PAPPA", "hp": "p.G139=", "cl": "Splice_Region", "csq": "splice_region_variant,synonymous_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

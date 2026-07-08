@@ -1,0 +1,1 @@
+{"10:28682400:28682400:G:T": [{"tx": "ENST00000497699", "g": "BAMBI", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": [], "t": 0}, {"tx": "ENST00000375533", "g": "BAMBI", "hp": "p.L261ext*?", "cl": "Nonstop_Mutation", "csq": "stop_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

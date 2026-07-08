@@ -1,0 +1,1 @@
+{"X:100928311:100928311:G:T": [{"tx": "ENST00000372956", "g": "XKRX", "hp": "", "cl": "5'UTR", "csq": "5_prime_UTR_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000468904", "g": "XKRX", "hp": "", "cl": "5'UTR", "csq": "5_prime_UTR_variant", "by": [], "t": 0}]}

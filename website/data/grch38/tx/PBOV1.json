@@ -1,0 +1,1 @@
+{"6:138218253:138218253:A:T": [{"tx": "ENST00000251691", "g": "ARFGEF3", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": ["fastvep"], "t": 0}, {"tx": "ENST00000527246", "g": "PBOV1", "hp": "p.F48Y", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat"], "t": 1}]}

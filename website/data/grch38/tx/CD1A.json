@@ -1,0 +1,1 @@
+{"1:158256003:158256003:G:C": [{"tx": "ENST00000289429", "g": "CD1A", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

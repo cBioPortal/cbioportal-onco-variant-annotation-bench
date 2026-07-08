@@ -1,0 +1,1 @@
+{"1:157589441:157589442:-:A": [{"tx": "ENST00000271532", "g": "FCRL4", "hp": "p.V24Cfs*71", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000448509", "g": "FCRL4", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": [], "t": 0}]}

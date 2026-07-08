@@ -1,0 +1,1 @@
+{"10:27675379:27675379:C:T": [{"tx": "ENST00000419761", "g": "MKX", "hp": "p.T303=", "cl": "Silent", "csq": "synonymous_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}, {"tx": "ENST00000375790", "g": "MKX", "hp": "p.T303=", "cl": "Silent", "csq": "synonymous_variant", "by": ["genome_nexus"], "t": 1}]}

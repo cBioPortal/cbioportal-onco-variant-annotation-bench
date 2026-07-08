@@ -1,0 +1,1 @@
+{"15:51105131:51105131:A:G": [{"tx": "ENST00000559909", "g": "", "hp": "", "cl": "Intron", "csq": "intron_variant,non_coding_transcript_variant", "by": ["vep_vcf2maf", "fastvep"], "t": 0}, {"tx": "ENST00000327536", "g": "TNFAIP8L3", "hp": "p.C16R", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"18:13884627:13884627:A:T": [{"tx": "ENST00000327606", "g": "MC2R", "hp": "p.K298ext*?", "cl": "Nonstop_Mutation", "csq": "stop_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000399821", "g": "MC2R", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 0}]}

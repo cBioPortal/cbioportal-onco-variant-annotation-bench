@@ -1,0 +1,1 @@
+{"7:76248215:76248216:-:GT": [{"tx": "ENST00000611745", "g": "SRRM3", "hp": "p.G89Wfs*8", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000479294", "g": "SRRM3", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": [], "t": 0}]}

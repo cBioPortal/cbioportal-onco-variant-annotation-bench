@@ -1,0 +1,1 @@
+{"6:168509913:168509913:A:C": [{"tx": "ENST00000354536", "g": "SMOC2", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": [], "t": 0}, {"tx": "ENST00000356284", "g": "SMOC2", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

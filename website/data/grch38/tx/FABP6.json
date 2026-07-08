@@ -1,0 +1,1 @@
+{"5:160213741:160213741:G:A": [{"tx": "ENST00000393980", "g": "FABP6", "hp": "p.L19=", "cl": "Silent", "csq": "synonymous_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000523955", "g": "FABP6", "hp": "p.L5=", "cl": "Silent", "csq": "synonymous_variant,NMD_transcript_variant", "by": ["vibe_vep"], "t": 0}]}

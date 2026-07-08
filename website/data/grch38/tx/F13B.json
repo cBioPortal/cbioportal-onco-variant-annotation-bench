@@ -1,0 +1,1 @@
+{"1:197057285:197057285:C:A": [{"tx": "ENST00000367412", "g": "F13B", "hp": "", "cl": "Splice_Site", "csq": "splice_donor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000649282", "g": "F13B", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": [], "t": 0}]}

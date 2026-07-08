@@ -1,0 +1,1 @@
+{"22:21272223:21272223:A:G": [{"tx": "ENST00000354336", "g": "CRKL", "hp": "p.M1V", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["genome_nexus", "vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}, {"tx": "ENST00000411769", "g": "CRKL", "hp": "p.M1V", "cl": "Translation_Start_Site", "csq": "start_lost,NMD_transcript_variant", "by": [], "t": 0}]}

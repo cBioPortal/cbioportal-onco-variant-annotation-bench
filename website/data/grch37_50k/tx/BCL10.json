@@ -1,0 +1,1 @@
+{"1:85733631:85733637:ATCTGGA:-": [{"tx": "ENST00000411322", "g": "", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 0}, {"tx": "ENST00000370580", "g": "BCL10", "hp": "p.D127Efs*19", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["genome_nexus", "vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}

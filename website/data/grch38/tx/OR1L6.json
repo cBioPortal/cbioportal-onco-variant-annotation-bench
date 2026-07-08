@@ -1,0 +1,1 @@
+{"9:122750156:122750156:C:A": [{"tx": "ENST00000304720", "g": "OR1L6", "hp": "p.Y103*", "cl": "Nonsense_Mutation", "csq": "stop_gained", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 0}, {"tx": "ENST00000373684", "g": "OR1L6", "hp": "p.Y139*", "cl": "Nonsense_Mutation", "csq": "stop_gained", "by": ["genome_nexus", "opencravat"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"2:73292355:73292355:G:T": [{"tx": "ENST00000436467", "g": "EGR4", "hp": "p.A188E", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}, {"tx": "ENST00000545030", "g": "EGR4", "hp": "p.A291E", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus"], "t": 1}]}

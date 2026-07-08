@@ -1,0 +1,1 @@
+{"20:45095159:45095159:G:A": [{"tx": "ENST00000537075", "g": "KCNS1", "hp": "p.T431M", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}, {"tx": "ENST00000306117", "g": "KCNS1", "hp": "p.T431M", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus"], "t": 1}]}

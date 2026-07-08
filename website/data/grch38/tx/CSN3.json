@@ -1,0 +1,1 @@
+{"4:70244849:70244850:CC:T": [{"tx": "ENST00000689459", "g": "CSN3", "hp": "p.L11Pfs*22", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": [], "t": 0}, {"tx": "ENST00000304954", "g": "CSN3", "hp": "p.L11Pfs*22", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

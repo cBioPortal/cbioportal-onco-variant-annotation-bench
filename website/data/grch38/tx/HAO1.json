@@ -1,0 +1,1 @@
+{"20:7914400:7914401:-:G": [{"tx": "ENST00000378789", "g": "HAO1", "hp": "p.M105Hfs*12", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

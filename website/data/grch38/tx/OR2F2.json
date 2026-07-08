@@ -1,0 +1,1 @@
+{"7:143935550:143935551:CT:G": [{"tx": "ENST00000408955", "g": "OR2F2", "hp": "p.G109Wfs*3", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

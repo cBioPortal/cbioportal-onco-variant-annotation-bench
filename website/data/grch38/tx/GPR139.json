@@ -1,0 +1,1 @@
+{"16:20073617:20073617:G:T": [{"tx": "ENST00000570682", "g": "GPR139", "hp": "", "cl": "5'UTR", "csq": "5_prime_UTR_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000326571", "g": "GPR139", "hp": "", "cl": "5'UTR", "csq": "5_prime_UTR_variant,NMD_transcript_variant", "by": [], "t": 0}]}

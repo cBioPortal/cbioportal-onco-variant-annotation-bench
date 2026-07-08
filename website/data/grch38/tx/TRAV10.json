@@ -1,0 +1,1 @@
+{"14:21825951:21825951:C:T": [{"tx": "ENST00000390432", "g": "TRAV10", "hp": "p.F73=", "cl": "Silent", "csq": "synonymous_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000539512", "g": "TRAV11", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": [], "t": 0}]}

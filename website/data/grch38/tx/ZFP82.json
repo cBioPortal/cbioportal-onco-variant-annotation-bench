@@ -1,0 +1,1 @@
+{"19:36409788:36409788:A:T": [{"tx": "ENST00000445543", "g": "ZFP82", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": [], "t": 0}, {"tx": "ENST00000392161", "g": "ZFP82", "hp": "p.M1K", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"16:87644750:87644750:G:-": [{"tx": "ENST00000537256", "g": "JPH3", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": [], "t": 0}, {"tx": "ENST00000284262", "g": "JPH3", "hp": "p.W292*fs*1", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

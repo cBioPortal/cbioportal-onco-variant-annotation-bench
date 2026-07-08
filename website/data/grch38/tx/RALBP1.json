@@ -1,0 +1,1 @@
+{"18:9533748:9533748:G:T": [{"tx": "ENST00000019317", "g": "RALBP1", "hp": "p.E541D", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus"], "t": 1}, {"tx": "ENST00000383432", "g": "RALBP1", "hp": "p.E541D", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}]}

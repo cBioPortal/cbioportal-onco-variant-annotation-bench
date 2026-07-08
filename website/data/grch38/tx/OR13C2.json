@@ -1,0 +1,1 @@
+{"9:104605582:104605584:CCT:AA": [{"tx": "ENST00000542196", "g": "OR13C2", "hp": "p.G16Lfs*19", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

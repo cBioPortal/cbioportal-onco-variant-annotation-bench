@@ -1,0 +1,1 @@
+{"9:87773180:87773180:C:A": [{"tx": "ENST00000412179", "g": "CTSL3P", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["genome_nexus", "fastvep_mafsmith"], "t": 1}, {"tx": "ENST00000354530", "g": "", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["vep_vcf2maf", "vibe_vep", "fastvep"], "t": 0}]}

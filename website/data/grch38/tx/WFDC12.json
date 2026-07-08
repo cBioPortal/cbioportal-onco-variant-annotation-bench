@@ -1,0 +1,1 @@
+{"20:45123854:45123867:GAGGACACCTGGTA:-": [{"tx": "ENST00000372785", "g": "WFDC12", "hp": "p.Q110Gfs*16", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"22:22704640:22704640:C:A": [{"tx": "ENST00000521183", "g": "IGLVVI-22-1", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 0}, {"tx": "ENST00000390307", "g": "IGLV3-22", "hp": "p.Q55K", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

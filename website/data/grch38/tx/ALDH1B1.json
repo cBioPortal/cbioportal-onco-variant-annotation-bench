@@ -1,0 +1,1 @@
+{"9:38395749:38395749:A:T": [{"tx": "ENST00000377698", "g": "ALDH1B1", "hp": "p.M1L", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000635162", "g": "ALDH1B1", "hp": "p.M1L", "cl": "Translation_Start_Site", "csq": "start_lost", "by": [], "t": 0}]}

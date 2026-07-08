@@ -1,0 +1,1 @@
+{"7:88794183:88794183:A:T": [{"tx": "ENST00000333190", "g": "ZNF804B", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": [], "t": 0}, {"tx": "ENST00000297203", "g": "TEX47", "hp": "p.K254ext*?", "cl": "Nonstop_Mutation", "csq": "stop_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"7:142671026:142671026:T:C": [{"tx": "ENST00000390398", "g": "TRBV25-1", "hp": "p.C42=", "cl": "Silent", "csq": "synonymous_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}, {"tx": "ENST00000604952", "g": "MTRNR2L6", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 1}]}

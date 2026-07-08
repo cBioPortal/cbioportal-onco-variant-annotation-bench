@@ -1,0 +1,1 @@
+{"14:22003402:22003402:T:C": [{"tx": "ENST00000390446", "g": "TRAV18", "hp": "p.S22P", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000390447", "g": "TRAV19", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": [], "t": 0}]}

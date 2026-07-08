@@ -1,0 +1,1 @@
+{"X:135760387:135760387:T:A": [{"tx": "ENST00000597510", "g": "CT45A3", "hp": "p.K179*", "cl": "Nonsense_Mutation", "csq": "stop_gained", "by": ["genome_nexus"], "t": 1}, {"tx": "ENST00000598716", "g": "CT45A3", "hp": "p.K179*", "cl": "Nonsense_Mutation", "csq": "stop_gained", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}]}

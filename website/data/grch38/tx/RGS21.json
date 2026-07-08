@@ -1,0 +1,1 @@
+{"1:192366122:192366122:T:G": [{"tx": "ENST00000643151", "g": "", "hp": "", "cl": "Intron", "csq": "intron_variant,non_coding_transcript_variant", "by": [], "t": 0}, {"tx": "ENST00000417209", "g": "RGS21", "hp": "p.G153ext*?", "cl": "Nonstop_Mutation", "csq": "stop_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

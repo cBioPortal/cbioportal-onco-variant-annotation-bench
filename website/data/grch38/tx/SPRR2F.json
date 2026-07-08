@@ -1,0 +1,1 @@
+{"1:153112731:153112731:C:G": [{"tx": "ENST00000468739", "g": "SPRR2F", "hp": "p.M1I", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

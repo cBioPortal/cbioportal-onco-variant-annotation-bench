@@ -1,0 +1,1 @@
+{"4:82661003:82661003:T:C": [{"tx": "ENST00000319540", "g": "SCD5", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000273908", "g": "SCD5", "hp": "p.Q215R", "cl": "Missense_Mutation", "csq": "missense_variant", "by": [], "t": 0}]}

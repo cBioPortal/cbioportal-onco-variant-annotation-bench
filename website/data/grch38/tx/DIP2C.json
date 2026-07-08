@@ -1,0 +1,1 @@
+{"10:486532:486532:T:A": [{"tx": "ENST00000280886", "g": "DIP2C", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000634311", "g": "DIP2C", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": [], "t": 0}]}

@@ -1,0 +1,1 @@
+{"7:143222083:143222084:-:A": [{"tx": "ENST00000595842", "g": "", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": [], "t": 0}, {"tx": "ENST00000408947", "g": "TAS2R40", "hp": "p.T3Nfs*9", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

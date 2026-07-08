@@ -1,0 +1,1 @@
+{"22:35085649:35085649:C:T": [{"tx": "ENST00000308700", "g": "ISX", "hp": "p.P232S", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus"], "t": 1}, {"tx": "ENST00000404699", "g": "ISX", "hp": "p.P232S", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}]}

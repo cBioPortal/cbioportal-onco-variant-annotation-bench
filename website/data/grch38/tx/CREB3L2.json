@@ -1,0 +1,1 @@
+{"7:137901424:137901424:T:A": [{"tx": "ENST00000330387", "g": "CREB3L2", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000456390", "g": "CREB3L2", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": [], "t": 0}]}

@@ -1,0 +1,1 @@
+{"8:18400401:18400402:-:G": [{"tx": "ENST00000286479", "g": "NAT2", "hp": "p.P134Afs*44", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000520116", "g": "NAT2", "hp": "p.P4Afs*44", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": [], "t": 0}]}

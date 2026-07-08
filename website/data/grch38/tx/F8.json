@@ -1,0 +1,1 @@
+{"X:154929262:154929264:TGC:CT": [{"tx": "ENST00000360256", "g": "F8", "hp": "p.K1510Efs*58", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000647125", "g": "F8", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 0}]}

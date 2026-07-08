@@ -1,0 +1,1 @@
+{"10:122697978:122697979:-:T": [{"tx": "ENST00000329446", "g": "C10orf120", "hp": "p.C255Mfs*8", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000432000", "g": "C10orf120", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": [], "t": 0}]}

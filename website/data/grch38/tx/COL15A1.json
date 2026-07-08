@@ -1,0 +1,1 @@
+{"9:99063052:99063052:A:G": [{"tx": "ENST00000375001", "g": "COL15A1", "hp": "p.P1198=", "cl": "Splice_Region", "csq": "splice_region_variant,synonymous_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

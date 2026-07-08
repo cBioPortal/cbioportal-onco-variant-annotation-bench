@@ -1,0 +1,1 @@
+{"X:49345900:49345900:G:C": [{"tx": "ENST00000621907", "g": "GAGE2E", "hp": "p.E103D", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}

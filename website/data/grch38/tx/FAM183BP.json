@@ -1,0 +1,1 @@
+{"7:38685920:38685920:C:T": [{"tx": "ENST00000409072", "g": "FAM183BP", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}

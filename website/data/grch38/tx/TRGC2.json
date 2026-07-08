@@ -1,0 +1,1 @@
+{"7:38242471:38242471:G:T": [{"tx": "ENST00000436911", "g": "TRGC2", "hp": "p.V128=", "cl": "Silent", "csq": "synonymous_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

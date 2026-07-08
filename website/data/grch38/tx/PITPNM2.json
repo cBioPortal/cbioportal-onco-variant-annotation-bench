@@ -1,0 +1,1 @@
+{"12:122991767:122991767:C:A": [{"tx": "ENST00000280562", "g": "PITPNM2", "hp": "p.G846C", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["opencravat"], "t": 0}, {"tx": "ENST00000320201", "g": "PITPNM2", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}

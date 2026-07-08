@@ -1,0 +1,1 @@
+{"13:102686305:102686306:-:C": [{"tx": "ENST00000267273", "g": "METTL21C", "hp": "p.E174Gfs*15", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

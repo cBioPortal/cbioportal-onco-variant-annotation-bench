@@ -1,0 +1,1 @@
+{"9:132572432:132572432:G:A": [{"tx": "ENST00000393216", "g": "CFAP77", "hp": "p.Q259=", "cl": "Silent", "csq": "synonymous_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 0}, {"tx": "ENST00000343036", "g": "CFAP77", "hp": "p.Q295=", "cl": "Silent", "csq": "synonymous_variant", "by": ["genome_nexus", "opencravat"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"X:116444921:116444926:AGTGGC:-": [{"tx": "ENST00000598581", "g": "SLC6A14", "hp": "p.K220_A222delinsK", "cl": "In_Frame_Del", "csq": "inframe_deletion", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

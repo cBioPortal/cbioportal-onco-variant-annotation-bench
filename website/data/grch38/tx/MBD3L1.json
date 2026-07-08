@@ -1,0 +1,1 @@
+{"19:8842706:8842706:C:T": [{"tx": "ENST00000595891", "g": "MBD3L1", "hp": "p.R10C", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 0}, {"tx": "ENST00000305625", "g": "MBD3L1", "hp": "p.R10C", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus", "opencravat"], "t": 1}]}

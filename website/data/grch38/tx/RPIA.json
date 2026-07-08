@@ -1,0 +1,1 @@
+{"2:88734615:88734615:G:-": [{"tx": "ENST00000283646", "g": "RPIA", "hp": "p.G176Efs*4", "cl": "Frame_Shift_Del", "csq": "frameshift_variant,splice_region_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

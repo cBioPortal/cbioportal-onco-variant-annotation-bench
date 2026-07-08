@@ -1,0 +1,1 @@
+{"14:24409604:24409605:-:A": [{"tx": "ENST00000382554", "g": "NYNRIN", "hp": "p.T606Nfs*97", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000554505", "g": "NYNRIN", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": [], "t": 0}]}

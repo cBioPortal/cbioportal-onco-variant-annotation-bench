@@ -1,0 +1,1 @@
+{"17:443440:443440:C:A": [{"tx": "ENST00000329099", "g": "RFLNB", "hp": "p.Q53H", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}

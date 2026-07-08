@@ -1,0 +1,1 @@
+{"X:12921283:12921284:-:A": [{"tx": "ENST00000218032", "g": "TLR8", "hp": "p.T750Nfs*8", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000311912", "g": "TLR8", "hp": "p.T768Nfs*8", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": [], "t": 0}]}

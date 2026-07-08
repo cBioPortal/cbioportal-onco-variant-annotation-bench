@@ -1,0 +1,1 @@
+{"4:158721371:158721372:GA:-": [{"tx": "ENST00000307720", "g": "PPID", "hp": "p.H67Ffs*11", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000512699", "g": "PPID", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": [], "t": 0}]}

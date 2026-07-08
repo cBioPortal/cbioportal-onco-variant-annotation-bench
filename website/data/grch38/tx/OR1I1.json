@@ -1,0 +1,1 @@
+{"19:15087064:15087064:A:G": [{"tx": "ENST00000641398", "g": "OR1I1", "hp": "", "cl": "5'UTR", "csq": "5_prime_UTR_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 0}, {"tx": "ENST00000209540", "g": "OR1I1", "hp": "", "cl": "5'UTR", "csq": "5_prime_UTR_variant", "by": ["genome_nexus", "opencravat"], "t": 1}]}

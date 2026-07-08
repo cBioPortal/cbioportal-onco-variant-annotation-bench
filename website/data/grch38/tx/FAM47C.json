@@ -1,0 +1,1 @@
+{"X:37011317:37011318:-:C": [{"tx": "ENST00000358047", "g": "FAM47C", "hp": "p.D971Rfs*4", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

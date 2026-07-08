@@ -1,0 +1,1 @@
+{"15:65410177:65410177:C:A": [{"tx": "ENST00000352385", "g": "IGDCC4", "hp": "", "cl": "Splice_Site", "csq": "splice_donor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000558819", "g": "IGDCC4", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 0}]}

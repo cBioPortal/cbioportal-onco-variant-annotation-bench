@@ -1,0 +1,1 @@
+{"12:94240662:94240662:C:A": [{"tx": "ENST00000258526", "g": "PLXNC1", "hp": "p.I766=", "cl": "Splice_Region", "csq": "splice_region_variant,synonymous_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

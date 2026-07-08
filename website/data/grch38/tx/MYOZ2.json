@@ -1,0 +1,1 @@
+{"4:119186049:119186050:-:A": [{"tx": "ENST00000307128", "g": "MYOZ2", "hp": "p.D216Rfs*18", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

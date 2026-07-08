@@ -1,0 +1,1 @@
+{"X:119870635:119870635:C:A": [{"tx": "ENST00000371442", "g": "RNF113A", "hp": "p.G327C", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat"], "t": 1}, {"tx": "ENST00000371437", "g": "NDUFA1", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": ["fastvep"], "t": 0}]}

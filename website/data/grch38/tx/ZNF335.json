@@ -1,0 +1,1 @@
+{"20:45957598:45957599:-:C": [{"tx": "ENST00000322927", "g": "ZNF335", "hp": "p.T811Hfs*27", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000475002", "g": "ZNF335", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 0}]}

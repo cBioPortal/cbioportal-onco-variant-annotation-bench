@@ -1,0 +1,1 @@
+{"11:4367856:4367857:-:A": [{"tx": "ENST00000624801", "g": "OR52B4", "hp": "p.C147Lfs*28", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

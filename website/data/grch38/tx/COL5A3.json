@@ -1,0 +1,1 @@
+{"19:9980694:9980694:T:C": [{"tx": "ENST00000264828", "g": "COL5A3", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

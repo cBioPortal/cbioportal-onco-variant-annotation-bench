@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>cBioPortal Onco Variant Effect Benchmark</title>
+<style>
+:root {
+  --surface-0: #ffffff;
+  --surface-1: #fcfcfb;
+  --surface-2: #f4f4f1;
+  --border: #e4e3de;
+  --text-primary: #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted: #86857f;
+  --good: #0ca30c;
+  --critical: #d03b3b;
+  --accent: #2a78d6;
+  --t0: #2a78d6; --t1: #1baf7a; --t2: #eda100; --t3: #008300;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-0: #141413; --surface-1: #1a1a19; --surface-2: #232322;
+    --border: #34342f; --text-primary: #ffffff; --text-secondary: #c3c2b7;
+    --text-muted: #8a897f;
+    --good: #0ca30c; --critical: #e5484d; --accent: #3987e5;
+    --t0: #3987e5; --t1: #199e70; --t2: #c98500; --t3: #22a022;
+  }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: var(--sans);
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); }
+header {
+  padding: 22px 28px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-1);
+}
+header h1 { margin: 0 0 4px; font-size: 20px; letter-spacing: -0.01em; }
+header .sub { color: var(--text-secondary); font-size: 13px; }
+header .sub b { color: var(--text-primary); }
+nav {
+  display: flex; gap: 2px; padding: 0 20px; background: var(--surface-1);
+  border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 20;
+  overflow-x: auto;
+}
+nav button {
+  appearance: none; border: 0; background: transparent; color: var(--text-secondary);
+  font: inherit; font-size: 13px; padding: 11px 15px; cursor: pointer;
+  border-bottom: 2px solid transparent; white-space: nowrap;
+}
+nav button:hover { color: var(--text-primary); }
+nav button.active { color: var(--text-primary); border-bottom-color: var(--accent); font-weight: 600; }
+main { padding: 24px 28px 80px; max-width: 1280px; }
+.view { display: none; }
+.view.active { display: block; }
+h2 { font-size: 16px; margin: 4px 0 6px; letter-spacing: -0.01em; }
+h3 { font-size: 13px; margin: 22px 0 8px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.04em; }
+p.lead { color: var(--text-secondary); max-width: 70ch; margin: 0 0 18px; }
+.card {
+  background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px;
+  padding: 18px 20px; margin-bottom: 18px;
+}
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--border); }
+th { color: var(--text-muted); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; cursor: default; }
+th.sortable { cursor: pointer; }
+th.sortable:hover { color: var(--text-primary); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tbody tr:hover { background: var(--surface-2); }
+.mono { font-family: var(--mono); font-size: 12px; }
+.pct { font-variant-numeric: tabular-nums; font-family: var(--mono); }
+.bar-cell { position: relative; min-width: 120px; }
+.bar-track { position: relative; height: 18px; background: var(--surface-2); border-radius: 3px; overflow: hidden; }
+.bar-fill { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+.bar-label { position: absolute; right: 6px; top: 0; line-height: 18px; font-size: 11px; font-family: var(--mono); color: var(--text-primary); }
+.tool-dot { display: inline-block; width: 9px; height: 9px; border-radius: 2px; margin-right: 6px; vertical-align: middle; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; border-radius: 20px;
+  font-size: 12px; background: var(--surface-2); border: 1px solid var(--border);
+}
+.ok { color: var(--good); }
+.bad { color: var(--critical); }
+.badge-ok { color: var(--good); font-weight: 600; }
+.badge-bad { color: var(--critical); font-weight: 600; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 14px; }
+.controls input[type=text], .controls select {
+  font: inherit; font-size: 13px; padding: 6px 9px; border: 1px solid var(--border);
+  border-radius: 7px; background: var(--surface-0); color: var(--text-primary);
+}
+.controls label { font-size: 12px; color: var(--text-secondary); }
+.muted { color: var(--text-muted); }
+.small { font-size: 12px; }
+.scroll-x { overflow-x: auto; }
+svg text { font-family: var(--sans); }
+.hb, .hc, .pin, .tipc { cursor: pointer; }
+.pin { -webkit-tap-highlight-color: transparent; }
+#tooltip {
+  position: fixed; pointer-events: none; z-index: 100; background: var(--surface-0);
+  border: 1px solid var(--border); border-radius: 7px; padding: 7px 10px; font-size: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.18); opacity: 0; transition: opacity .08s; max-width: 300px;
+}
+.legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 6px 0 14px; font-size: 12px; }
+.legend span { display: inline-flex; align-items: center; }
+.stat-row { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 18px; }
+.stat { background: var(--surface-1); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; min-width: 150px; }
+.stat .v { font-size: 26px; font-weight: 650; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+.pager { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: 13px; }
+.pager button { font: inherit; padding: 5px 11px; border: 1px solid var(--border); border-radius: 7px; background: var(--surface-0); color: var(--text-primary); cursor: pointer; }
+.pager button:disabled { opacity: .4; cursor: default; }
+.drill { margin-top: 10px; }
+.tx-truth { background: color-mix(in srgb, var(--good) 12%, transparent); }
+.tx-pick { font-weight: 600; }
+.pill { display:inline-block; padding:1px 6px; border-radius: 5px; font-size: 11px; font-family: var(--mono); margin-right:3px; color:#fff; }
+details.help { margin: 10px 0 18px; }
+details.help summary { cursor: pointer; color: var(--text-secondary); font-size: 13px; }
+.loading { color: var(--text-muted); padding: 20px 0; }
+.track-sel { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; background: var(--surface-2); }
+.track-sel button { appearance: none; border: 0; background: transparent; color: var(--text-secondary); font: inherit; font-size: 12px; padding: 7px 12px; cursor: pointer; white-space: nowrap; }
+.track-sel button.active { background: var(--accent); color: #fff; font-weight: 600; }
+.onco-sel-wrap { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--text-secondary); user-select:none; padding:4px 10px; border:1px solid var(--border); border-radius:6px; white-space:nowrap; }
+.onco-sel-wrap.on { color:var(--text-primary); border-color:var(--critical); background:color-mix(in srgb, var(--critical) 10%, transparent); }
+.onco-sel-wrap select { background:var(--surface-2); color:var(--text-primary); border:1px solid var(--border); border-radius:4px; font-size:12px; padding:2px 4px; cursor:pointer; }
+.onco-banner { margin:0 0 16px; padding:10px 14px; border-radius:8px; font-size:13px; color:var(--text-primary); border:1px solid var(--critical); background:color-mix(in srgb, var(--critical) 8%, transparent); }
+.dl-btn { padding:8px 14px; border:1px solid var(--border); border-radius:6px; background:var(--surface-2); color:var(--text-primary); font-size:13px; cursor:pointer; }
+.dl-btn:hover { border-color:var(--accent); }
+.explore { margin:0 0 18px; padding:10px 14px; border:1px solid var(--border); border-radius:8px; font-size:13px; color:var(--text-secondary); display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; }
+.explore a { color:var(--accent); cursor:pointer; text-decoration:none; white-space:nowrap; }
+.explore a:hover { text-decoration:underline; }
+@keyframes cmpflash { 0% { box-shadow:0 0 0 3px var(--accent); } 100% { box-shadow:0 0 0 0 transparent; } }
+.cmp-flash { animation: cmpflash 0.7s ease-out; }
+code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+    <div>
+      <h1>cBioPortal Onco Variant Effect Benchmark</h1>
+      <div class="sub" id="subhead">Loading…</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
+      <div class="track-sel" id="track-sel"></div>
+      <label class="onco-sel-wrap" id="onco-toggle" title="Restrict every view to an OncoKB category / therapeutic level">
+        <span>OncoKB:</span><select id="onco-filter"><option value="">All variants</option></select>
+      </label>
+    </div>
+  </div>
+</header>
+<nav id="nav">
+  <button data-view="overview" class="active">Overview</button>
+  <button data-view="classes">By variant class</button>
+  <button data-view="genes">By gene</button>
+  <button data-view="browser">Discrepancy browser</button>
+  <button data-view="compare">Compare tools</button>
+  <button data-view="datahubdiff">2017 → 50K</button>
+  <button data-view="overrides">Isoforms</button>
+  <button data-view="download">Download / LLM</button>
+  <button data-view="about">About</button>
+</nav>
+<main>
+  <section id="overview" class="view active"></section>
+  <section id="classes" class="view"></section>
+  <section id="genes" class="view"></section>
+  <section id="browser" class="view"></section>
+  <section id="compare" class="view"></section>
+  <section id="datahubdiff" class="view"></section>
+  <section id="overrides" class="view"></section>
+  <section id="download" class="view"></section>
+  <section id="about" class="view"></section>
+</main>
+<div id="tooltip"></div>
+<script>
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const pct = x => x==null ? "—" : (x*100).toFixed(1)+"%";
+const pct2 = x => x==null ? "—" : (x*100).toFixed(2)+"%";
+const esc = s => (s??"").toString().replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const isDark = () => matchMedia("(prefers-color-scheme: dark)").matches;
+// Revalidate with the server (conditional GET) so an updated JSON is never masked
+// by a stale browser cache; unchanged files still return a fast 304.
+const getJSON = u => fetch(u, {cache: "no-cache"}).then(r => r.json());
+const cssvar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+// Two benchmark tracks, each with its own data/<track>/ directory.
+const TRACKS = {
+  grch37: {label: "GRCh37 · MSK-IMPACT", hasIsoforms: true, hasDatahubDiff: true,
+    ref: "Datahub", refLong: "cBioPortal Datahub — the published MSK-IMPACT annotation (Genome Nexus)"},
+  grch37_50k: {label: "GRCh37 · MSK-IMPACT 50K", hasIsoforms: false,
+    ref: "Datahub", refLong: "cBioPortal Datahub — the published MSK-IMPACT 50K annotation (Genome Nexus), a newer & larger release than 2017"},
+  grch38: {label: "GRCh38 · TCGA-GDC", hasIsoforms: true,
+    ref: "GDC", refLong: "the GDC's published VEP/GENCODE annotation"},
+};
+// The reference is what was *published*, not absolute ground truth — hence "Datahub"/"GDC", not "truth".
+const REF = () => TRACKS[TRACK].ref;
+const _urlTrack = new URLSearchParams(location.search).get("track");
+let TRACK = (_urlTrack && TRACKS[_urlTrack]) ? _urlTrack : (localStorage.getItem("track") || "grch37");
+if(!TRACKS[TRACK]) TRACK = "grch37";
+const dataURL = n => `data/${TRACK}/${n}`;
+// OncoKB filter: FILTER is "" (all) or a preset id ("onco","level1","level12","level123","resistance").
+// Per-variant datasets load their `_<id>` variant; the Overview reads stage2_filters[id].
+let FILTER = localStorage.getItem("onco_filter") || (localStorage.getItem("onco")==="1" ? "onco" : "");
+const fsuf = () => FILTER ? "_"+FILTER : "";
+const fdata = base => dataURL(base + fsuf() + ".json");
+const curFilter = () => (state.summary && (state.summary.filters||[]).find(f=>f.id===FILTER)) || null;
+const s2for = t => (FILTER ? ((t.stage2_filters && t.stage2_filters[FILTER]) || {}) : (t.stage2 || {}));
+
+const state = { summary:null, byGene:null, byClass:null, variants:null, tref:null, tools:[], toolColor:{} };
+const METRIC = {
+  transcript_concordance: "Transcript pick",
+  protein: "Protein (HGVSp)",
+  protein_change_concordance_full: "Protein (HGVSp)",
+  variant_class_concordance: "Variant class",
+  consequence_concordance: "Consequence",
+  hgvsc_concordance: "Coding (HGVSc)",
+  gene_concordance: "Gene",
+};
+
+// ---------- tooltip ----------
+const tip = $("#tooltip");
+function showTip(html, x, y){ tip.innerHTML = html; tip.style.opacity = 1;
+  const r = tip.getBoundingClientRect(); let nx = x+14, ny = y+14;
+  if(nx + r.width > innerWidth) nx = x - r.width - 14;
+  if(nx < 6) nx = 6;
+  // On touch, the finger covers the point — prefer showing above it.
+  if(ny + r.height > innerHeight - 6) ny = y - r.height - 18;
+  if(ny < 6) ny = 6;
+  tip.style.left = nx+"px"; tip.style.top = ny+"px"; }
+function hideTip(){ tip.style.opacity = 0; }
+// Bind hover (desktop) + tap (touch) tooltips. Each node needs data-t.
+function bindTip(nodes){
+  nodes.forEach(n => {
+    n.addEventListener("mousemove", e => showTip(n.dataset.t, e.clientX, e.clientY));
+    n.addEventListener("mouseleave", hideTip);
+    n.addEventListener("click", e => {
+      e.stopPropagation();
+      const p = (e.touches && e.touches[0]) || e;
+      showTip(n.dataset.t, p.clientX, p.clientY);
+    });
+  });
+}
+// Tap anywhere else dismisses the tooltip on touch devices.
+document.addEventListener("click", hideTip);
+addEventListener("scroll", hideTip, true);
+
+// ---------- color ----------
+function toolColor(id){
+  const t = state.summary.tools.find(t=>t.id===id);
+  if(!t) return cssvar("--text-muted");
+  return isDark() ? t.dark : t.light;
+}
+
+// ---------- grouped bar chart (SVG) ----------
+function groupedBars(el, {groups, series, valueOf, colorOf, labelOf, fmt=pct}){
+  // groups: array of group keys (e.g. metrics); series: array (e.g. tools)
+  const W = Math.max(560, el.clientWidth||900), rowH = 30, gap = 16, padL = 150, padR = 20, padT = 8;
+  const gH = series.length*rowH + gap;
+  const H = padT + groups.length*gH;
+  const x0 = padL, xW = W - padL - padR;
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${H}" role="img">`;
+  // gridlines
+  for(let g=0; g<=4; g++){ const gx = x0 + xW*g/4;
+    s += `<line x1="${gx}" y1="${padT}" x2="${gx}" y2="${H-6}" stroke="${cssvar('--border')}" stroke-width="1"/>`;
+    s += `<text x="${gx}" y="${H-0}" font-size="10" fill="${cssvar('--text-muted')}" text-anchor="middle">${g*25}%</text>`; }
+  groups.forEach((grp, gi) => {
+    const gy = padT + gi*gH;
+    s += `<text x="8" y="${gy+ (series.length*rowH)/2}" font-size="12" fill="${cssvar('--text-secondary')}" dominant-baseline="middle">${esc(labelOf?labelOf(grp):grp)}</text>`;
+    series.forEach((se, si) => {
+      const v = valueOf(grp, se); const y = gy + si*rowH + 4; const bw = Math.max(2, xW*(v||0));
+      const col = colorOf(se);
+      s += `<rect x="${x0}" y="${y}" width="${xW}" height="${rowH-10}" fill="${cssvar('--surface-2')}" rx="3"/>`;
+      s += `<rect class="hb" data-t="${esc(tipFor(grp,se,v))}" x="${x0}" y="${y}" width="${bw}" height="${rowH-10}" fill="${col}" rx="3"/>`;
+      s += `<text x="${x0+xW-5}" y="${y+(rowH-10)/2}" font-size="11" fill="${cssvar('--text-primary')}" text-anchor="end" dominant-baseline="middle" font-family="var(--mono)">${fmt(v)}</text>`;
+    });
+  });
+  s += `</svg>`;
+  el.innerHTML = s;
+  bindTip($$(".hb", el));
+  function tipFor(){ return ""; }
+}
+
+// ---------- heatmap ----------
+function heatmap(el, {rows, cols, valueOf, rowLabel, colLabel, note}){
+  const cellW = 96, cellH = 30, padL = 190, padT = 96, padR = 12;
+  // rotated labels pivot at their right end; a ~96px label at -30° dips ~48px
+  // below the pivot, so keep the pivot high enough that it clears the cell grid.
+  const labelY = padT - 56;
+  const W = padL + cols.length*cellW + padR, H = padT + rows.length*cellH + 6;
+  const ramp = ["#cde2fb","#9ec5f4","#6da7ec","#3987e5","#256abf","#184f95","#0d366b"];
+  const col = v => v==null ? cssvar('--surface-2') : ramp[Math.min(6, Math.floor(v*7*0.999 + (v>=0.999?-0.001:0)))];
+  // for concordance, higher=darker blue; low values pop light -> put dark text
+  let s = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}">`;
+  cols.forEach((c,ci)=>{ const x = padL + ci*cellW + cellW/2;
+    s += `<text x="${x}" y="${labelY}" font-size="11" fill="${cssvar('--text-secondary')}" text-anchor="end" transform="rotate(-30 ${x} ${labelY})">${esc(colLabel(c))}</text>`; });
+  rows.forEach((r,ri)=>{ const y = padT + ri*cellH;
+    s += `<text x="${padL-8}" y="${y+cellH/2}" font-size="11.5" fill="${cssvar('--text-primary')}" text-anchor="end" dominant-baseline="middle">${esc(rowLabel(r))}</text>`;
+    cols.forEach((c,ci)=>{ const v = valueOf(r,c); const x = padL + ci*cellW;
+      const fill = col(v); const light = v==null||v<0.5;
+      s += `<rect class="hc" data-t="${esc(rowLabel(r))}: ${esc(colLabel(c))} — ${v==null?'n/a':pct2(v)}" x="${x+1}" y="${y+1}" width="${cellW-2}" height="${cellH-2}" fill="${fill}" rx="2"/>`;
+      s += `<text x="${x+cellW/2}" y="${y+cellH/2}" font-size="11" fill="${light?cssvar('--text-primary'):'#fff'}" text-anchor="middle" dominant-baseline="middle" font-family="var(--mono)">${v==null?'—':(v*100).toFixed(0)}</text>`;
+    });
+  });
+  s += `</svg>`;
+  el.innerHTML = `<div class="scroll-x">${s}</div>` + (note?`<div class="small muted" style="margin-top:6px">${note}</div>`:"");
+  bindTip($$(".hc", el));
+}
+
+// ---------- views ----------
+function renderOverview(){
+  const el = $("#overview"); const s = state.summary;
+  const tools = s.tools;
+  const TW = REF();
+  const TWtx = REF()+"'s transcript";
+  let h = `<p class="lead">Every tool re-annotates the ${s.n_variants.toLocaleString()} unique <b>${esc(s.truth_set)}</b> variants and is
+    scored against <b>${esc(TRACKS[TRACK].refLong)}</b>. This is the <em>published</em> annotation, not absolute ground truth —
+    so a low score can mean a different (equally defensible) convention, not an error. The benchmark
+    separates <b>annotation</b> (is a transcript's effect right?) from <b>selection</b> (does the tool pick ${TWtx}?) —
+    because that split is the whole story.</p>`;
+
+  const cf = curFilter();
+  if(FILTER && cf) h += `<div class="onco-banner">Showing <b>OncoKB: ${esc(cf.label)}</b> — ${cf.n.toLocaleString()} of ${s.n_variants.toLocaleString()} variants (${pct(cf.n/s.n_variants)}). Every metric, class, gene and browser view below is restricted to this subset.</div>`;
+
+  const nVar = FILTER&&cf ? cf.n : s.n_variants;
+  const nDisc = FILTER&&cf ? cf.n_discrepant : s.n_discrepant;
+  const nGenes = FILTER&&cf ? cf.n_genes : s.n_genes;
+  h += `<div class="stat-row">
+    <div class="stat"><div class="v">${tools.length}</div><div class="k">tools compared</div></div>
+    <div class="stat"><div class="v">${nVar.toLocaleString()}</div><div class="k">${FILTER&&cf?esc(cf.label)+' variants':'unique variants'}</div></div>
+    <div class="stat"><div class="v">${nGenes.toLocaleString()}</div><div class="k">genes</div></div>
+    <div class="stat"><div class="v">${nDisc != null ? nDisc.toLocaleString() : '—'}</div><div class="k">variants where a tool<br>disagrees with ${esc(REF())}</div></div>
+  </div>`;
+
+  h += `<div class="explore"><b>Explore &amp; take the results with you:</b>
+    <a onclick="switchView('compare')">Compare two tools head-to-head</a>
+    <a onclick="switchView('genes')">Drill into a gene</a>
+    <a onclick="switchView('download')">Download CSV / copy a ready-made LLM prompt / WebMCP</a>${TRACKS[TRACK].hasDatahubDiff?`
+    <a onclick="switchView('datahubdiff')">See how the published annotation drifted 2017 → 50K</a>`:''}</div>`;
+
+  // Stage 1 table
+  h += `<div class="card"><h2>Stage 1 — Annotation (transcript-level)</h2>
+    <p class="lead small">For every transcript a tool reports, is the annotation right? Scored on ${TWtx} regardless of what the tool would <em>pick</em>. A property of the annotator.${FILTER?' <b>Stage&nbsp;1 is shown over all variants</b> — annotator quality is transcript-level; the OncoKB filter applies to Stage&nbsp;2 and every other view.':''}</p>
+    <div class="scroll-x"><table><thead><tr>
+    <th>Annotator</th><th class="num">Transcripts / variant</th><th class="num">${esc(REF())} tx present</th><th class="num">Protein on ${esc(REF())} tx</th><th class="num">Variant class on ${esc(REF())} tx</th>
+    </tr></thead><tbody>`;
+  const s1lbl = id => (s.tools.find(t=>t.id===id)||{}).label || id;
+  const s1order = id => { const i = s.tools.findIndex(t=>t.id===id); return i<0?99:i; };
+  [...s.stage1].sort((a,b)=>s1order(a.tool)-s1order(b.tool)).forEach(m => {
+    h += `<tr><td><span class="tool-dot" style="background:${toolColor(m.tool)}"></span>${esc(s1lbl(m.tool))}</td>
+      <td class="num">${m.mean_transcripts_per_variant.toFixed(1)}</td>
+      <td class="num pct">${pct(m.msk_transcript_present_rate)}</td>
+      <td class="num pct">${pct(Math.max(m.protein_full_concordance_on_msk_tx||0, m.protein_short_concordance_on_msk_tx||0))}</td>
+      <td class="num pct">${m.variant_class_concordance_on_msk_tx!=null?pct(m.variant_class_concordance_on_msk_tx):'<span class="muted">—</span>'}</td></tr>`;
+  });
+  const s1names = [...s.stage1].sort((a,b)=>s1order(a.tool)-s1order(b.tool)).map(m=>s1lbl(m.tool));
+  const s1list = s1names.length>1 ? s1names.slice(0,-1).join(", ")+" and "+s1names.slice(-1) : (s1names[0]||"");
+  h += `</tbody></table></div>
+    <p class="small muted" style="margin-top:8px">Only annotators that emit <b>every</b> overlapping transcript appear here — ${esc(s1list)} — each parsed from its full per-transcript output before it is collapsed to a single pick. fastVEP+mafsmith reuses fastVEP's annotator, so its Stage&nbsp;1 is fastVEP's row. vibe-vep emits only its single picked transcript (in the MAF), so it appears in Stage&nbsp;2 only. <b>The takeaway:</b> every annotator gets ${REF()}'s own transcript ~98% of the time and reports the identical protein change ~98–99% on it — so the Stage&nbsp;2 spread below is almost entirely transcript <em>selection</em>, not annotation error.</p></div>`;
+
+  // Stage 2 table
+  h += `<div class="card"><h2>Stage 2 — Selection (pick + effect)</h2>
+    <p class="lead small">Which single transcript + effect does the tool report, vs ${REF()}'s pick? A property of the selection policy on top of the annotator.</p>
+    <div class="legend">` + tools.map(t=>`<span><span class="tool-dot" style="background:${toolColor(t.id)}"></span>${esc(t.label)}</span>`).join("") + `</div>`;
+  h += `<div id="ov-bars"></div></div>`;
+
+  el.innerHTML = h;
+
+  const metrics = ["transcript_concordance","protein","variant_class_concordance","consequence_concordance","hgvsc_concordance","gene_concordance"];
+  const s2 = s2for;
+  const proteinVal = st => Math.max(st.protein_change_concordance_full||0, st.protein_change_concordance||0);
+  groupedBars($("#ov-bars"), {
+    groups: metrics, series: tools.map(t=>t.id),
+    labelOf: m => METRIC[m], colorOf: id => toolColor(id),
+    valueOf: (m, id) => { const st = s2(tools.find(t=>t.id===id)); return m==="protein" ? proteinVal(st) : st[m]; },
+  });
+  // attach richer tooltips
+  reattachBarTips($("#ov-bars"), metrics, tools);
+}
+function reattachBarTips(el, metrics, tools){
+  const bars = $$(".hb", el); let i=0;
+  const s2 = s2for;
+  metrics.forEach(m => tools.forEach(t => {
+    const st = s2(t);
+    const v = m==="protein" ? Math.max(st.protein_change_concordance_full||0, st.protein_change_concordance||0) : st[m];
+    const b = bars[i++]; if(!b) return;
+    b.dataset.t = `<b>${esc(t.label)}</b><br>${METRIC[m]}: <b>${pct2(v)}</b>`;
+  }));
+}
+
+function renderClasses(){
+  const el = $("#classes"); const bc = state.byClass; const tools = state.summary.tools;
+  let h = `<p class="lead">Concordance broken down by ${REF()}'s variant classification. Numbers are the % of variants of that
+    class where each tool's <b>picked-transcript protein change (HGVSp)</b> matches ${REF()}. Cells are shaded by concordance.</p>
+    ${state.summary.track!=='grch38' ? `<p class="lead small">Note: low <b>In_Frame_Del</b> for the fastVEP tools reflects fastVEP's lack of VEP-style 3′-shift
+    normalization for deletion positions (the malformed <code>p.Tyr43???</code> output was found here and fixed in
+    <a href="https://github.com/Huang-lab/fastVEP/pull/58" target="_blank" rel="noopener">fastVEP#58</a>). See <b>About → Findings</b>.</p>` : ''}`;
+  h += `<div class="card"><h3>Protein (HGVSp) concordance — variant class × tool</h3><div id="cls-heat"></div></div>`;
+  h += `<div class="card"><h3>Counts &amp; transcript-pick concordance</h3><div class="scroll-x"><table><thead><tr><th>Variant class</th><th class="num">Variants</th>`
+    + tools.map(t=>`<th class="num">${esc(shortLabel(t))}</th>`).join("") + `</tr></thead><tbody>`;
+  bc.forEach(r => {
+    h += `<tr><td>${esc(r.variant_class)}</td><td class="num">${r.n.toLocaleString()}</td>`
+      + tools.map(t=>`<td class="num pct">${pct(r[t.id]?.tx)}</td>`).join("") + `</tr>`;
+  });
+  h += `</tbody></table></div><div class="small muted" style="margin-top:6px">Table shows transcript-pick concordance; heatmap above shows protein (HGVSp).</div></div>`;
+  el.innerHTML = h;
+  heatmap($("#cls-heat"), {
+    rows: bc, cols: tools,
+    rowLabel: r => `${r.variant_class} (${r.n.toLocaleString()})`,
+    colLabel: t => shortLabel(t),
+    valueOf: (r,t) => r[t.id]?.hgvsp,
+    note: "Darker = higher concordance. Cell value is percent.",
+  });
+}
+function shortLabel(t){
+  return {genome_nexus:"Genome Nexus", vep_vcf2maf:"VEP+vcf2maf", vibe_vep:"vibe-vep", fastvep:"fastVEP", fastvep_mafsmith:"fastVEP+mafsmith"}[t.id] || t.id;
+}
+
+let geneSort = {key:"worst_hgvsp", dir:1};
+function renderGenes(){
+  const el = $("#genes"); const tools = state.summary.tools;
+  let h = `<p class="lead">Where does it go wrong, by gene? Sorted by the worst per-tool protein concordance so the
+    hardest genes surface first. Click a gene to open its variants in the discrepancy browser.</p>`;
+  h += `<div class="controls"><label>Filter gene <input type="text" id="gene-filter" placeholder="e.g. TP53"></label>
+    <label>Min variants <input type="text" id="gene-minn" value="0" style="width:64px"></label></div>`;
+  h += `<div class="card scroll-x"><table id="gene-table"><thead><tr>
+    <th class="sortable" data-k="gene">Gene</th><th class="sortable num" data-k="n">Variants</th>`
+    + tools.map(t=>`<th class="sortable num" data-k="${t.id}">${esc(shortLabel(t))}<br><span class="muted small">HGVSp</span></th>`).join("")
+    + `<th class="sortable num" data-k="worst_hgvsp">Worst</th></tr></thead><tbody id="gene-body"></tbody></table></div>`;
+  el.innerHTML = h;
+  const draw = () => {
+    const f = $("#gene-filter").value.trim().toUpperCase();
+    const minn = parseInt($("#gene-minn").value||"0",10)||0;
+    let rows = state.byGene.filter(r => (!f || r.gene.toUpperCase().includes(f)) && r.n>=minn);
+    rows.sort((a,b)=>{ const k=geneSort.key; let av = k==="gene"?a.gene : (k in a ? (typeof a[k]==="object"?a[k].hgvsp:a[k]) : a[k]);
+      let bv = k==="gene"?b.gene : (k in b ? (typeof b[k]==="object"?b[k].hgvsp:b[k]) : b[k]);
+      if(typeof av==="object") av = av.hgvsp; if(typeof bv==="object") bv = bv.hgvsp;
+      return (av>bv?1:av<bv?-1:0)*geneSort.dir; });
+    const body = $("#gene-body");
+    body.innerHTML = rows.slice(0,400).map(r => `<tr><td><a href="#" class="gene-link" data-g="${esc(r.gene)}">${esc(r.gene)}</a>${r.override?' <span class="chip small pin" data-t="MSK overrides the default canonical transcript for this gene" title="MSK overrides the default canonical transcript for this gene" style="padding:0 6px">📌</span>':''}</td>
+      <td class="num">${r.n.toLocaleString()}</td>`
+      + tools.map(t=>{const v=r[t.id]?.hgvsp; return `<td class="num pct" style="color:${v!=null&&v<0.9?'var(--critical)':'inherit'}">${pct(v)}</td>`;}).join("")
+      + `<td class="num pct">${pct(r.worst_hgvsp)}</td></tr>`).join("")
+      + (rows.length>400?`<tr><td colspan="${tools.length+3}" class="muted small">Showing first 400 of ${rows.length.toLocaleString()} genes.</td></tr>`:"");
+    $$(".gene-link", body).forEach(a => a.addEventListener("click", e => {
+      e.preventDefault(); openBrowserForGene(a.dataset.g);
+    }));
+    bindTip($$(".pin", body));
+  };
+  $("#gene-filter").addEventListener("input", draw);
+  $("#gene-minn").addEventListener("input", draw);
+  $$("#gene-table th.sortable").forEach(th => th.addEventListener("click", () => {
+    const k = th.dataset.k; geneSort.dir = (geneSort.key===k? -geneSort.dir : (k==="gene"?1:-1)); geneSort.key = k; draw();
+  }));
+  draw();
+}
+
+// ---------- discrepancy browser ----------
+const browser = { page:0, pageSize:60, filtered:[], geneFilter:"", classFilter:"", toolFilter:"", typeFilter:"" };
+async function ensureVariants(){
+  if(state.variants) return;
+  $("#browser").innerHTML = `<div class="loading">Loading discrepancy data (~10 MB)…</div>`;
+  state.variants = await getJSON(fdata("variants"));
+}
+async function renderBrowser(){
+  await ensureVariants();
+  const V = state.variants; const tools = state.summary.tools;
+  const classes = [...new Set(V.variants.map(v=>v.cl).filter(Boolean))].sort();
+  let h = `<p class="lead"><b>${V.n_discrepant.toLocaleString()}</b> of ${V.n_total.toLocaleString()} variants
+    where at least one tool disagrees with ${REF()} on the picked transcript or protein change. Filter, then click a row to
+    inspect every transcript.</p>`;
+  h += `<div class="controls">
+    <label>Gene <input type="text" id="b-gene" placeholder="TP53" value="${esc(browser.geneFilter)}"></label>
+    <label>Class <select id="b-class"><option value="">any</option>${classes.map(c=>`<option ${c===browser.classFilter?'selected':''}>${esc(c)}</option>`).join("")}</select></label>
+    <label>Disagreeing tool <select id="b-tool"><option value="">any</option>${tools.map(t=>`<option value="${t.id}" ${t.id===browser.toolFilter?'selected':''}>${esc(shortLabel(t))}</option>`).join("")}</select></label>
+    <label>Mismatch <select id="b-type"><option value="">tx or protein</option><option value="tx">transcript</option><option value="hgvsp">protein</option></select></label>
+    <span class="muted small" id="b-count"></span>
+  </div>`;
+  h += `<div class="card scroll-x"><table><thead><tr><th>Gene</th><th>Position</th><th>Class</th><th>${REF()} pick</th>`
+    + tools.map(t=>`<th><span class="tool-dot" style="background:${toolColor(t.id)}"></span>${esc(shortLabel(t))}</th>`).join("")
+    + `</tr></thead><tbody id="b-body"></tbody></table></div><div class="pager"><button id="b-prev">‹ Prev</button><span id="b-pageinfo" class="muted"></span><button id="b-next">Next ›</button></div>`;
+  h += `<div id="b-drill"></div>`;
+  $("#browser").innerHTML = h;
+
+  const apply = () => {
+    browser.geneFilter = $("#b-gene").value.trim().toUpperCase();
+    browser.classFilter = $("#b-class").value;
+    browser.toolFilter = $("#b-tool").value;
+    browser.typeFilter = $("#b-type").value;
+    const ti = V.tool_ids;
+    browser.filtered = V.variants.filter(v => {
+      if(browser.geneFilter && !(v.g||"").toUpperCase().includes(browser.geneFilter)) return false;
+      if(browser.classFilter && v.cl!==browser.classFilter) return false;
+      if(browser.toolFilter){ const idx = ti.indexOf(browser.toolFilter); const pk=v.pk[idx];
+        if(!pk) return false; const bad = (browser.typeFilter==="tx")? !pk[3] : (browser.typeFilter==="hgvsp")? !pk[4] : (!pk[3]||!pk[4]);
+        if(!bad) return false;
+      } else if(browser.typeFilter){ const any = v.pk.some(pk => browser.typeFilter==="tx"?!pk[3]:!pk[4]); if(!any) return false; }
+      return true;
+    });
+    browser.page = 0; drawPage();
+  };
+  const drawPage = () => {
+    const ti = V.tool_ids; const rows = browser.filtered;
+    const start = browser.page*browser.pageSize; const slice = rows.slice(start, start+browser.pageSize);
+    $("#b-count").textContent = `${rows.length.toLocaleString()} variants`;
+    $("#b-body").innerHTML = slice.map((v,i) => {
+      const gi = start+i;
+      return `<tr class="b-row" data-i="${gi}"><td><b>${esc(v.g)}</b></td>
+        <td class="mono">${esc(v.c)}:${v.p.toLocaleString()}</td>
+        <td class="small">${esc(v.cl)}</td>
+        <td class="mono">${esc(v.th||'·')}<br><span class="muted" style="font-size:10px">${esc(v.tt)}</span></td>`
+        + v.pk.map((pk,ci) => {
+          const okTx = pk[3], okHp = pk[4];
+          const mark = okHp ? '<span class="ok">●</span>' : '<span class="bad">▲</span>';
+          return `<td class="mono small">${mark} ${esc(pk[1]||'·')}${okTx?'':`<br><span class="muted bad" style="font-size:10px">${esc(pk[0]||'—')}</span>`}</td>`;
+        }).join("") + `</tr>`;
+    }).join("") || `<tr><td colspan="${ti.length+4}" class="muted">No variants match.</td></tr>`;
+    $("#b-pageinfo").textContent = rows.length? `Page ${browser.page+1} / ${Math.ceil(rows.length/browser.pageSize)}` : "";
+    $("#b-prev").disabled = browser.page===0;
+    $("#b-next").disabled = start+browser.pageSize >= rows.length;
+    $$(".b-row").forEach(tr => tr.addEventListener("click", () => drill(browser.filtered[+tr.dataset.i])));
+  };
+  $("#b-gene").addEventListener("input", apply);
+  $("#b-class").addEventListener("change", apply);
+  $("#b-tool").addEventListener("change", apply);
+  $("#b-type").addEventListener("change", apply);
+  $("#b-prev").addEventListener("click", ()=>{ browser.page=Math.max(0,browser.page-1); drawPage(); scrollTo({top:0,behavior:'smooth'}); });
+  $("#b-next").addEventListener("click", ()=>{ browser.page++; drawPage(); scrollTo({top:0,behavior:'smooth'}); });
+  apply();
+  // deep-link: #browser/<var_key> opens that variant's transcript drill-down
+  if(browser.pendingVk){
+    const v = state.variants.variants.find(v => v.vk === browser.pendingVk);
+    browser.pendingVk = null;
+    if(v){ $("#b-gene").value = v.g; apply(); drill(v); }
+  }
+}
+
+const txCache = {};
+async function drill(v){
+  history.replaceState(null,"","#browser/"+encodeURIComponent(v.vk));
+  const host = $("#b-drill");
+  host.innerHTML = `<div class="loading">Loading transcripts for ${esc(v.g)} ${esc(v.c)}:${v.p}…</div>`;
+  const gene = (v.g||"_").replace(/\//g,"_");
+  if(!txCache[gene]){ try { txCache[gene] = await getJSON(dataURL(`tx/${encodeURIComponent(gene)}.json`)); } catch(e){ txCache[gene] = {}; } }
+  const rows = (txCache[gene]||{})[v.vk] || [];
+  const tools = state.summary.tools; const ti = state.variants.tool_ids;
+  let h = `<div class="card drill"><h2>${esc(v.g)} · ${esc(v.c)} · <span class="mono">${esc(v.c)}:${v.p.toLocaleString()} ${esc(v.vk.split(':').slice(3).join('>'))}</span></h2>`;
+  h += `<div class="legend small">` + tools.map(t=>`<span><span class="tool-dot" style="background:${toolColor(t.id)}"></span>${esc(shortLabel(t))}</span>`).join("")
+     + `<span><span class="tool-dot" style="background:var(--good)"></span>${REF()}</span></div>`;
+  h += `<p class="small muted">Transcripts reported for this variant. The <b>${REF()}</b> row is the published pick; pills show which tools picked each transcript. This is where transcript-selection disagreements become visible.</p>`;
+  h += `<div class="scroll-x"><table><thead><tr><th>Transcript</th><th>Gene</th><th>Protein (HGVSp)</th><th>Variant class</th><th>Consequence</th><th>Picked by</th></tr></thead><tbody>`;
+  // sort: truth first, then picked, then rest
+  rows.sort((a,b)=> (b.t-a.t) || (b.by.length-a.by.length) || a.tx.localeCompare(b.tx));
+  rows.forEach(r => {
+    const pills = (r.by||[]).map(id=>`<span class="pill" style="background:${toolColor(id)}">${esc(shortLabel(state.summary.tools.find(t=>t.id===id)))}</span>`).join("")
+      + (r.t?`<span class="pill" style="background:var(--good)">${REF()}</span>`:"");
+    const matchTruth = r.hp === v.th;
+    h += `<tr class="${r.t?'tx-truth':''}"><td class="mono ${r.by.length||r.t?'tx-pick':''}">${esc(r.tx)}</td>
+      <td>${esc(r.g)}</td>
+      <td class="mono ${!matchTruth&&(r.by.length)?'bad':''}">${esc(r.hp||'·')}</td>
+      <td class="small">${esc(r.cl)}</td><td class="small muted">${esc(r.csq)}</td>
+      <td>${pills||'<span class="muted small">—</span>'}</td></tr>`;
+  });
+  h += `</tbody></table></div></div>`;
+  host.innerHTML = h;
+  host.scrollIntoView({behavior:"smooth", block:"nearest"});
+}
+
+function openBrowserForGene(gene){
+  browser.geneFilter = gene.toUpperCase(); browser.classFilter=""; browser.toolFilter=""; browser.typeFilter="";
+  switchView("browser");
+}
+
+// ---------- tool-vs-tool comparison (no truth) ----------
+const cmp = { a:null, b:null, field:0 };
+const CMPFIELD = ["transcript pick","protein (HGVSp)","variant class"];
+async function renderCompare(){
+  await ensureVariants();
+  const V = state.variants; const tools = state.summary.tools; const ti = V.tool_ids;
+  const nTotal = V.n_total;
+  if(cmp.a==null || !ti.includes(cmp.a)) cmp.a = ti[0];
+  if(cmp.b==null || !ti.includes(cmp.b)) cmp.b = ti[1] || ti[0];
+  const lblOf = id => shortLabel(state.summary.tools.find(t=>t.id===id)||{id});
+  // disagreements live entirely in the discrepant set: if two tools pick
+  // differently they cannot both equal the truth. Agreement = 1 - disagree/total.
+  const disagree = (aId,bId,f) => {
+    const ai = ti.indexOf(aId), bi = ti.indexOf(bId); let d=0;
+    for(const v of V.variants){ const a=v.pk[ai], b=v.pk[bi]; if(!a||!b) continue; if((a[f]||"")!==(b[f]||"")) d++; }
+    return d;
+  };
+  const agree = (aId,bId,f) => nTotal ? 1-(disagree(aId,bId,f)/nTotal) : null;
+
+  let h = `<p class="lead">There is no absolute ground truth for variant effect — even the "truth" here is one pipeline's
+    convention. This compares any <b>two tools directly</b>: where do they pick the same transcript, protein change and class,
+    and where do they diverge?${FILTER&&curFilter()?' <b>(OncoKB: '+esc(curFilter().label)+' only.)</b>':''}</p>`;
+  h += `<div class="controls">
+    <label>Tool A <select id="cmp-a">${ti.map(id=>`<option value="${id}" ${id===cmp.a?'selected':''}>${esc(lblOf(id))}</option>`).join("")}</select></label>
+    <label>Tool B <select id="cmp-b">${ti.map(id=>`<option value="${id}" ${id===cmp.b?'selected':''}>${esc(lblOf(id))}</option>`).join("")}</select></label>
+  </div>`;
+  h += `<div class="stat-row" id="cmp-stats"></div>`;
+  h += `<div class="card"><h3>Pairwise agreement — <span id="cmp-fname">transcript pick</span> (every tool × every tool)</h3>
+    <div class="controls"><label>Metric <select id="cmp-field">${CMPFIELD.map((f,i)=>`<option value="${i}" ${i===cmp.field?'selected':''}>${esc(f)}</option>`).join("")}</select></label></div>
+    <div id="cmp-heat"></div></div>`;
+  h += `<div class="card"><h3>Where <span id="cmp-an"></span> and <span id="cmp-bn"></span> disagree</h3>
+    <div class="scroll-x"><table><thead><tr><th>Gene</th><th>Position</th><th>Class</th><th>${REF()} pick</th><th id="cmp-ah"></th><th id="cmp-bh"></th></tr></thead><tbody id="cmp-body"></tbody></table></div>
+    <div class="pager"><span id="cmp-count" class="muted"></span></div></div>`;
+  $("#compare").innerHTML = h;
+
+  const drawStats = () => {
+    const a=cmp.a, b=cmp.b;
+    $("#cmp-stats").innerHTML = [0,1,2].map(f =>
+      `<div class="stat"><div class="v">${pct(agree(a,b,f))}</div><div class="k">${esc(CMPFIELD[f])}<br>agreement</div></div>`).join("")
+      + `<div class="stat"><div class="v">${disagree(a,b,0).toLocaleString()}</div><div class="k">variants where they<br>pick a different transcript</div></div>`;
+    $("#cmp-an").textContent = lblOf(a); $("#cmp-bn").textContent = lblOf(b);
+    $("#cmp-ah").textContent = lblOf(a); $("#cmp-bh").textContent = lblOf(b);
+  };
+  const drawHeat = () => {
+    $("#cmp-fname").textContent = CMPFIELD[cmp.field];
+    heatmap($("#cmp-heat"), {
+      rows: ti, cols: ti,
+      rowLabel: id => lblOf(id), colLabel: id => lblOf(id),
+      // symmetric matrix → show only the lower triangle (upper half is identical).
+      valueOf: (r,c) => { const ri=ti.indexOf(r), ci=ti.indexOf(c); if(ci>ri) return null; return r===c ? 1 : agree(r,c,cmp.field); },
+      note: "Darker = the two tools agree more often. Diagonal is self (100%); the upper half is omitted (it mirrors the lower). Click a cell to load that pair below.",
+    });
+    // lower-triangle cells are clickable → select that pair; highlight current selection.
+    const N = ti.length, cells = $$(".hc", $("#cmp-heat"));
+    cells.forEach((rect,i) => { const row=Math.floor(i/N), col=i%N;
+      if(col>=row) return;  // diagonal + omitted upper half: not selectable
+      rect.style.cursor = "pointer";
+      const sel = (ti[row]===cmp.a&&ti[col]===cmp.b) || (ti[row]===cmp.b&&ti[col]===cmp.a);
+      if(sel){ rect.style.stroke=cssvar('--accent'); rect.style.strokeWidth="3"; }
+      rect.addEventListener("click", () => {
+        cmp.a=ti[row]; cmp.b=ti[col];
+        const sa=$("#cmp-a"), sb=$("#cmp-b"); if(sa)sa.value=cmp.a; if(sb)sb.value=cmp.b;
+        drawStats(); drawTable(); drawHeat();
+        // brief flash on the dropdowns to signal the pair switched (no scroll)
+        [sa,sb].forEach(s => { if(!s) return; s.classList.remove("cmp-flash"); void s.offsetWidth; s.classList.add("cmp-flash"); });
+      });
+    });
+  };
+  const drawTable = () => {
+    const a=cmp.a, b=cmp.b, ai=ti.indexOf(a), bi=ti.indexOf(b);
+    const rows = V.variants.filter(v => { const x=v.pk[ai], y=v.pk[bi]; return x&&y&&((x[0]||"")!==(y[0]||"")||(x[1]||"")!==(y[1]||"")); });
+    $("#cmp-count").textContent = `${rows.length.toLocaleString()} variants where they differ on transcript or protein (showing first 300)`;
+    $("#cmp-body").innerHTML = rows.slice(0,300).map(v => {
+      const x=v.pk[ai], y=v.pk[bi];
+      const cell = pk => `<span class="mono">${esc(pk[1]||'·')}</span><br><span class="muted" style="font-size:10px">${esc(pk[0]||'—')}</span>`;
+      const diff = (x[1]||"")!==(y[1]||"");
+      return `<tr><td><b>${esc(v.g)}</b></td><td class="mono small">${esc(v.c)}:${v.p.toLocaleString()}</td>
+        <td class="small">${esc(v.cl)}</td>
+        <td class="mono small">${esc(v.th||'·')}<br><span class="muted" style="font-size:10px">${esc(v.tt)}</span></td>
+        <td class="small ${diff?'bad':''}">${cell(x)}</td><td class="small ${diff?'bad':''}">${cell(y)}</td></tr>`;
+    }).join("") || `<tr><td colspan="6" class="muted">These two tools agree on every variant in this set.</td></tr>`;
+  };
+  const redraw = () => { drawStats(); drawHeat(); drawTable(); };
+  $("#cmp-a").addEventListener("change", e => { cmp.a=e.target.value; redraw(); });
+  $("#cmp-b").addEventListener("change", e => { cmp.b=e.target.value; redraw(); });
+  $("#cmp-field").addEventListener("change", e => { cmp.field=+e.target.value; drawHeat(); });
+  redraw();
+}
+
+// ---------- Datahub 2017 -> 50K re-annotation drift ----------
+async function renderDatahubDiff(){
+  const el = $("#datahubdiff");
+  if(!state.ddiff){ el.innerHTML = `<div class="loading">Loading Datahub re-annotation diff…</div>`;
+    try { state.ddiff = await getJSON(dataURL("datahub_diff.json")); }
+    catch(e){ el.innerHTML = `<div class="card">Datahub diff not available for this track.</div>`; return; } }
+  const d = state.ddiff;
+  const pctc = x => (x*100).toFixed(2)+"%";
+  let h = `<p class="lead">The benchmark scores tools against a <b>published</b> annotation — but the published annotation
+    <em>itself changes between releases</em>. Here the same source (MSK-IMPACT via cBioPortal Datahub) is compared across two
+    versions: <b>2017</b> (${d.n_2017.toLocaleString()} variants) and <b>50K / 2026</b> (${d.n_50k.toLocaleString()} variants).
+    On the <b>${d.n_shared.toLocaleString()}</b> variants present in both, this is what MSK re-annotated — the clearest evidence
+    that "truth" is a moving, versioned convention.</p>`;
+  h += `<div class="stat-row">
+    <div class="stat"><div class="v">${d.n_shared.toLocaleString()}</div><div class="k">variants in<br>both releases</div></div>
+    <div class="stat"><div class="v">${pctc(d.unchanged.transcript)}</div><div class="k">same transcript<br>(${d.n_changed.transcript.toLocaleString()} changed)</div></div>
+    <div class="stat"><div class="v">${pctc(d.unchanged.protein)}</div><div class="k">same protein HGVSp<br>(${d.n_changed.protein.toLocaleString()} changed)</div></div>
+    <div class="stat"><div class="v">${d.n_new_in_50k.toLocaleString()}</div><div class="k">new variants<br>added in 50K</div></div>
+  </div>`;
+  h += `<div class="card"><h3>Genes MSK re-assigned a canonical transcript (2017 → 50K)</h3>
+    <p class="lead small">${d.n_tx_switch_genes} genes changed their canonical transcript between releases — this drives most of the
+    protein-change differences (a different transcript renumbers every residue). Includes major cancer genes. Transcript
+    <code>.version</code> suffixes are the current Ensembl GRCh37 versions (the MSK MAFs don't record them).</p>
+    <div class="scroll-x"><table><thead><tr><th>Gene</th><th>2017 transcript</th><th>50K transcript</th><th class="num">Variants affected</th></tr></thead><tbody>`
+    + d.transcript_switches.map(s=>`<tr><td><b>${esc(s.gene)}</b></td><td class="mono small">${esc(s.tx_2017)}</td><td class="mono small">${esc(s.tx_50k)}</td><td class="num">${s.n.toLocaleString()}</td></tr>`).join("")
+    + `</tbody></table></div></div>`;
+  h += `<div class="card"><h3>Every re-annotated variant (${d.changed.length.toLocaleString()})</h3>
+    <div class="controls"><label>Filter gene <input type="text" id="dd-gene" placeholder="e.g. KRAS"></label>
+      <label><input type="checkbox" id="dd-txonly"> transcript changed only</label>
+      <span class="muted small" id="dd-count"></span></div>
+    <div class="scroll-x"><table><thead><tr><th>Gene</th><th>Position</th><th>2017 (transcript · protein)</th><th>50K (transcript · protein)</th></tr></thead><tbody id="dd-body"></tbody></table></div></div>`;
+  el.innerHTML = h;
+  const draw = () => {
+    const f = ($("#dd-gene").value||"").trim().toUpperCase();
+    const txonly = $("#dd-txonly").checked;
+    const rows = d.changed.filter(c => (!f || c.gene.toUpperCase().includes(f)) && (!txonly || c.tx_changed));
+    $("#dd-count").textContent = `${rows.length.toLocaleString()} of ${d.changed.length.toLocaleString()}`;
+    $("#dd-body").innerHTML = rows.slice(0,400).map(c => {
+      const chr = c.vk.split(":").slice(0,2).join(":");
+      const pdiff = c.hgvsp_2017 !== c.hgvsp_50k;
+      return `<tr><td><b>${esc(c.gene)}</b></td><td class="mono small">${esc(chr)}</td>
+        <td class="mono small"><span class="muted">${esc(c.tx_2017||'—')}</span> · ${esc(c.hgvsp_2017||'·')}</td>
+        <td class="mono small ${pdiff?'bad':''}"><span class="muted">${esc(c.tx_50k||'—')}</span> · ${esc(c.hgvsp_50k||'·')}</td></tr>`;
+    }).join("") + (rows.length>400?`<tr><td colspan="4" class="muted small">Showing first 400 of ${rows.length.toLocaleString()}.</td></tr>`:"");
+  };
+  $("#dd-gene").addEventListener("input", draw);
+  $("#dd-txonly").addEventListener("change", draw);
+  draw();
+}
+
+// ---------- downloads ----------
+function downloadBlob(name, text, type){
+  const blob = new Blob([text], {type: type||"text/plain"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a);
+  a.click(); a.remove(); setTimeout(()=>URL.revokeObjectURL(url), 2000);
+}
+function toCSV(rows, cols){
+  const esc = v => { v = v==null?"":String(v); return /[",\n]/.test(v) ? '"'+v.replace(/"/g,'""')+'"' : v; };
+  return [cols.join(","), ...rows.map(r => cols.map(c => esc(r[c])).join(","))].join("\n");
+}
+function leaderboardCSV(){
+  const s = state.summary; const suf = fsuf();
+  const s2 = s2for;
+  const s1 = Object.fromEntries(s.stage1.map(m=>[m.tool,m]));
+  const rows = s.tools.map(t => { const m=s2(t), a=s1[t.id]||{};
+    return { tool:t.id, label:t.label,
+      transcript_pick:m.transcript_concordance, protein_hgvsp_short:m.protein_change_concordance,
+      protein_hgvsp_full:m.protein_change_concordance_full, variant_class:m.variant_class_concordance,
+      consequence:m.consequence_concordance, hgvsc:m.hgvsc_concordance, gene:m.gene_concordance,
+      stage1_truth_tx_present:a.msk_transcript_present_rate,
+      stage1_protein_on_truth_tx: a.protein_full_concordance_on_msk_tx!=null?Math.max(a.protein_full_concordance_on_msk_tx||0,a.protein_short_concordance_on_msk_tx||0):"" }; });
+  return toCSV(rows, ["tool","label","transcript_pick","protein_hgvsp_short","protein_hgvsp_full","variant_class","consequence","hgvsc","gene","stage1_truth_tx_present","stage1_protein_on_truth_tx"]);
+}
+function llmBenchmarkPrompt(){
+  const s = state.summary; const suf = FILTER&&curFilter()?" (OncoKB: "+curFilter().label+")":"";
+  const s2 = s2for;
+  const p = x => x==null?"—":(x*100).toFixed(1)+"%";
+  let out = `You are a genomics assistant. Below is a variant-annotation benchmark. Use ONLY this data to answer my questions about it; be concise and cite the numbers.\n\n`;
+  out += `# cBioPortal Onco Variant Effect Benchmark — ${TRACKS[TRACK].label}${suf}\n`;
+  out += `Tools re-annotate ${s.n_variants.toLocaleString()} ${s.truth_set} variants (${s.genome}) and are scored against ${TRACKS[TRACK].refLong}. This is the PUBLISHED annotation, not absolute truth. Two stages: Stage 1 = annotation quality on the reference's own transcript; Stage 2 = whether the tool PICKS the same transcript+effect.\n\n`;
+  out += `## Leaderboard (Stage 2 — % concordance with ${REF()})\n`;
+  out += `tool | transcript pick | protein HGVSp | variant class | consequence | HGVSc | gene\n`;
+  out += `---|---|---|---|---|---|---\n`;
+  s.tools.forEach(t=>{ const m=s2(t); out += `${t.label} | ${p(m.transcript_concordance)} | ${p(Math.max(m.protein_change_concordance||0,m.protein_change_concordance_full||0))} | ${p(m.variant_class_concordance)} | ${p(m.consequence_concordance)} | ${p(m.hgvsc_concordance)} | ${p(m.gene_concordance)}\n`; });
+  out += `\n## Stage 1 (annotation on the reference transcript)\n`;
+  s.stage1.forEach(m=>{ const lbl=(s.tools.find(t=>t.id===m.tool)||{}).label||m.tool; out += `${lbl}: ${p(m.msk_transcript_present_rate)} present, ${p(Math.max(m.protein_full_concordance_on_msk_tx||0,m.protein_short_concordance_on_msk_tx||0))} protein on that transcript\n`; });
+  out += `\n## Protein concordance by variant class (per tool, Stage 2)\n`;
+  out += `class (n) | ${s.tools.map(t=>t.label).join(" | ")}\n`;
+  (state.byClass||[]).slice(0,12).forEach(r=>{ out += `${r.variant_class} (${r.n}) | ${s.tools.map(t=>p(r[t.id]&&r[t.id].hgvsp)).join(" | ")}\n`; });
+  out += `\n## Hardest genes (lowest worst-case protein concordance)\n`;
+  (state.byGene||[]).slice(0,20).forEach(r=>{ out += `${r.gene} (${r.n} variants): worst ${p(r.worst_hgvsp)}\n`; });
+  const abs = n => new URL(dataURL(n), location.href).href;
+  out += `\n## Full data files — fetch these for deeper analysis (if you have web access)\n`;
+  out += `The tables above are a summary. For anything beyond it, GET these JSON files (same track${FILTER?", filtered to "+(curFilter()?curFilter().label:FILTER)+" where a _"+FILTER+" file exists":""}):\n`;
+  out += `- summary.json (all metrics, tool versions, oncogenic counts): ${abs("summary.json")}\n`;
+  out += `- by_class${fsuf()}.json (per variant-class × tool): ${abs("by_class"+fsuf()+".json")}\n`;
+  out += `- by_gene${fsuf()}.json (every gene × tool, ~${(state.byGene||[]).length} genes): ${abs("by_gene"+fsuf()+".json")}\n`;
+  out += `- variants${fsuf()}.json (every discrepant variant, each tool's picked transcript + effect): ${abs("variants"+fsuf()+".json")}\n`;
+  if(TRACKS[TRACK].hasIsoforms) out += `- transcript_reference.json (per-gene canonical transcript from MANE/Ensembl/UniProt/MSKCC): ${abs("transcript_reference.json")}\n`;
+  out += `- per-gene transcript drill-down (all tools' picks for a gene's variants): ${abs("tx/")}<GENE>.json  (e.g. ${abs("tx/TP53.json")})\n`;
+  out += `To compare tools directly (no reference), load variants.json: two tools that pick differently can't both match the reference, so every A-vs-B disagreement is in that file (field pk[toolIndex] = [transcript, hgvsp, class, tx_ok, hgvsp_ok]).\n`;
+  out += `\nNow answer my question about this benchmark — cite the summary numbers above, and fetch the files when you need per-gene or per-variant detail.`;
+  return out;
+}
+async function copyText(text, msgEl){
+  try { if(navigator.clipboard && window.isSecureContext){ await navigator.clipboard.writeText(text); if(msgEl) msgEl.textContent="✓ copied to clipboard"; return; } } catch(e){}
+  try { const ta=document.createElement("textarea"); ta.value=text; ta.style.position="fixed"; ta.style.opacity="0"; document.body.appendChild(ta); ta.select();
+    const ok=document.execCommand("copy"); ta.remove(); if(ok){ if(msgEl) msgEl.textContent="✓ copied"; return; } } catch(e){}
+  downloadBlob("benchmark_llm_prompt.txt", text, "text/plain"); if(msgEl) msgEl.textContent="clipboard blocked (not HTTPS) — downloaded as .txt instead";
+}
+async function discrepanciesCSV(){
+  await ensureVariants(); const V = state.variants; const ti = V.tool_ids;
+  const cols = ["var_key","gene","class","truth_transcript","truth_hgvsp"];
+  ti.forEach(id => { cols.push(id+"_transcript", id+"_hgvsp"); });
+  const rows = V.variants.map(v => { const r = {var_key:v.vk, gene:v.g, class:v.cl, truth_transcript:v.tt, truth_hgvsp:v.th};
+    ti.forEach((id,i)=>{ r[id+"_transcript"]=v.pk[i]?.[0]||""; r[id+"_hgvsp"]=v.pk[i]?.[1]||""; }); return r; });
+  return toCSV(rows, cols);
+}
+function renderDownloads(){
+  const s = state.summary; const tk = TRACK; const suf = fsuf();
+  const files = [
+    ["summary.json", "Leaderboard + per-tool Stage 1/Stage 2 metrics, oncogenic counts, tool versions", "summary.json"],
+    ["by_class"+suf+".json", "Per variant-class concordance for every tool", "by_class"+suf+".json"],
+    ["by_gene"+suf+".json", "Per-gene concordance for every tool (all "+s.n_genes.toLocaleString()+" genes)", "by_gene"+suf+".json"],
+    ["variants"+suf+".json", "Every discrepant variant with each tool's picked transcript + effect", "variants"+suf+".json"],
+    ["transcript_reference.json", "Per-gene canonical transcript from MANE / Ensembl / UniProt / MSKCC", "transcript_reference.json"],
+  ];
+  let h = `<p class="lead">All benchmark results are precomputed JSON — download the machine-readable files directly, or export
+    CSV summaries. Files reflect the current track (<b>${esc(TRACKS[tk].label)}</b>)${FILTER&&curFilter()?' and the <b>OncoKB: '+esc(curFilter().label)+'</b> filter':''}.</p>`;
+  h += `<div class="card"><h3>CSV exports (generated in your browser)</h3>
+    <div class="controls">
+      <button class="dl-btn" id="dl-lb">⬇ Leaderboard (CSV)</button>
+      <button class="dl-btn" id="dl-class">⬇ By variant class (CSV)</button>
+      <button class="dl-btn" id="dl-gene">⬇ By gene (CSV)</button>
+      <button class="dl-btn" id="dl-disc">⬇ Discrepant variants (CSV)</button>
+    </div></div>`;
+  h += `<div class="card"><h3>Raw data files (JSON)</h3><div class="scroll-x"><table><thead><tr><th>File</th><th>Contents</th></tr></thead><tbody>`
+    + files.map(([name,desc,url]) => `<tr><td><a href="${dataURL(url)}" download class="mono">${esc(name)}</a></td><td class="small muted">${esc(desc)}</td></tr>`).join("")
+    + `</tbody></table></div><p class="small muted" style="margin-top:8px">Per-gene transcript detail is under <code>data/${tk}/tx/&lt;GENE&gt;.json</code>. The full pipeline (extraction, every tool's raw output, comparison scripts) is in the project's <code>benchmark/</code> directory.</p></div>`;
+  h += `<div class="card"><h3>Ask the results — WebMCP</h3>
+    <p class="lead small">This page exposes its data to in-browser AI agents via <b>WebMCP</b> — an agent can call tools to query the benchmark directly, no scraping. Tools register on <code>navigator.modelContext</code> and are always on <code>window.benchmarkMCP</code>.</p>
+    <p class="small" style="padding:8px 12px;border:1px solid var(--border);border-radius:6px;background:var(--surface-2)">⚠️ <b>navigator.modelContext (WebMCP) is experimental</b> — currently only in preview browsers (e.g. <b>Chrome Canary</b>, behind an experimental flag). In any other browser the same tools work from the DevTools console via <code>window.benchmarkMCP</code>.</p>
+    <div class="scroll-x"><table><thead><tr><th>Tool</th><th>What it answers</th></tr></thead><tbody>
+    <tr><td class="mono">benchmark_overview</td><td class="small muted">Track, reference source, counts, tools, oncogenic total</td></tr>
+    <tr><td class="mono">leaderboard</td><td class="small muted">Per-tool metrics (optionally oncogenic-only)</td></tr>
+    <tr><td class="mono">compare_tools</td><td class="small muted">Two tools head-to-head + genes where they disagree</td></tr>
+    <tr><td class="mono">gene_report</td><td class="small muted">One gene: per-tool picks + canonical transcripts</td></tr>
+    <tr><td class="mono">worst_genes</td><td class="small muted">Hardest genes (lowest protein concordance)</td></tr>
+    </tbody></table></div>
+    <p class="small muted" style="margin-top:8px">Console example: <code>await window.benchmarkMCP.call('compare_tools', {toolA:'genome_nexus', toolB:'fastvep'})</code>. Tools honor the active track and OncoKB filter.</p></div>`;
+  h += `<div class="card"><h3>Ask a local LLM (Claude · ChatGPT · Copilot)</h3>
+    <p class="lead small">No special browser needed — copy a ready-made prompt with this track's results baked in, paste it into any chat LLM, and ask questions ("which tool is best for splice variants?", "why does Genome Nexus disagree with fastVEP on KRAS?").</p>
+    <div class="controls"><button class="dl-btn" id="dl-prompt">📋 Copy LLM prompt (this track)</button><span class="muted small" id="dl-prompt-msg"></span></div>
+    <p class="small muted" style="margin-top:8px">The prompt embeds the leaderboard, per-variant-class breakdown and hardest genes as compact tables (a few KB) — enough for the model to answer most questions offline. For deep dives, also attach the CSVs above.</p></div>`;
+  $("#download").innerHTML = h;
+  const tag = fsuf();
+  $("#dl-lb").onclick = () => downloadBlob(`leaderboard_${tk}${tag}.csv`, leaderboardCSV(), "text/csv");
+  $("#dl-class").onclick = () => downloadBlob(`by_class_${tk}${tag}.csv`, toCSV(state.byClass.flatMap(r => s.tools.map(t=>({variant_class:r.variant_class,n:r.n,tool:t.id,transcript:r[t.id]?.tx,hgvsp:r[t.id]?.hgvsp,variant_class_match:r[t.id]?.class}))), ["variant_class","n","tool","transcript","hgvsp","variant_class_match"]), "text/csv");
+  $("#dl-gene").onclick = () => downloadBlob(`by_gene_${tk}${tag}.csv`, toCSV(state.byGene.flatMap(r => s.tools.map(t=>({gene:r.gene,n:r.n,tool:t.id,transcript:r[t.id]?.tx,hgvsp:r[t.id]?.hgvsp}))), ["gene","n","tool","transcript","hgvsp"]), "text/csv");
+  $("#dl-disc").onclick = async (e) => { const btn=e.target; btn.textContent="Preparing…"; const csv = await discrepanciesCSV(); downloadBlob(`discrepant_variants_${tk}${tag}.csv`, csv, "text/csv"); btn.textContent="⬇ Discrepant variants (CSV)"; };
+  const pbtn = $("#dl-prompt"); if(pbtn) pbtn.onclick = () => copyText(llmBenchmarkPrompt(), $("#dl-prompt-msg"));
+}
+
+async function renderOverrides(){
+  const el = $("#overrides"); const ov = state.summary.override;
+  if(!state.tref){ el.innerHTML = `<div class="loading">Loading transcript reference…</div>`;
+    state.tref = await getJSON(dataURL("transcript_reference.json")); }
+  const rows = state.tref.rows;
+  const hasVer = state.tref.has_version !== false;
+  const isMane = state.tref.truth_source === 'mane';  // GRCh38/GDC truth ≈ MANE, not MSKCC
+  const nOverride = state.tref.counts.msk_override||0, nEqMane = state.tref.counts.msk_eq_mane||0;
+  let h = `<p class="lead">There is no single "canonical" transcript — different resources pick different ones${hasVer?`, and even
+    when they agree on the transcript they often disagree on its <b>.version</b>`:''}. This is the per-gene reference of the
+    canonical transcript each source assigns: <b>MANE Select</b> (the current NCBI/EMBL-EBI standard), <b>Ensembl</b>,
+    <b>UniProt</b>, and <b>MSKCC</b>${hasVer?' — with version suffixes':''} and the reason each was chosen. ${isMane
+      ? `This track's truth is the GDC's VEP/GENCODE-canonical pick, which tracks <b>MANE Select</b> — so MANE is the reference here; the MSKCC column is shown for cross-track comparison.`
+      : `MSK's production pipeline (and this benchmark's truth) uses the <b>MSKCC</b> column.`}</p>`;
+  h += `<div class="stat-row">
+    <div class="stat"><div class="v">${rows.length}</div><div class="k">${isMane?'cancer genes':'panel genes'}<br>in this reference</div></div>
+    <div class="stat"><div class="v" style="color:var(--critical)">${nOverride}</div><div class="k">MSKCC overrides<br>the Ensembl canonical</div></div>
+    <div class="stat"><div class="v" style="color:var(--good)">${nEqMane}</div><div class="k">MSKCC transcript<br>= MANE (ignoring version)</div></div>
+    ${(ov && ov.no_override_pick!=null) ? `<div class="stat"><div class="v">${pct(ov.no_override_pick)}→${pct(ov.with_override_pick)}</div><div class="k">mafsmith transcript-pick<br>without → with the MSK list</div></div>` : ''}
+  </div>`;
+  h += `<p class="lead small">Source: <a href="${esc(state.tref.source_url)}" target="_blank" rel="noopener">${esc(state.tref.source)}</a>
+    (genome-nexus-importer). ${state.tref.version_source?`Transcript <code>.version</code> suffixes are from <b>${esc(state.tref.version_source)}</b> (the ensembl95 export omits them). `:''}The <em>reason</em> for each pick is the explanation column (hover/tap a cell): e.g.
+    <code>ensembl longest</code>, <code>uniprot isoform override</code>, <code>mskcc isoform override</code>. Cells are red where a source picks a <b>different transcript</b> than Ensembl's canonical.</p>`;
+  h += `<div class="controls"><label>Filter <input type="text" id="ov-filter" placeholder="gene or transcript"></label>
+    <label><input type="checkbox" id="ov-div"> MSKCC ≠ Ensembl only</label>
+    <span class="muted small" id="ov-count"></span></div>`;
+  h += `<div class="card scroll-x"><table><thead><tr>
+    <th>Gene</th><th>MANE Select${isMane?' (reference)':''}</th><th>Ensembl</th><th>UniProt</th><th>MSKCC${isMane?'':' (truth)'}</th>
+    </tr></thead><tbody id="ov-body"></tbody></table></div>`;
+  el.innerHTML = h;
+  const b = s => (s||"").split(".")[0];
+  const cell = (tx, why, ref) => {
+    if(!tx) return '<td class="mono"><span class="muted">—</span></td>';
+    const diff = ref && b(tx)!==b(ref);
+    const t = why ? `${tx}${why?' — '+why:''}` : tx;
+    return `<td class="mono tipc" data-t="${esc(t)}"><span class="${diff?'bad':''}">${esc(tx)}</span></td>`;
+  };
+  const draw = () => {
+    const f = ($("#ov-filter").value||"").trim().toUpperCase();
+    const divOnly = $("#ov-div").checked;
+    const r = rows.filter(x => (!f || x.gene.toUpperCase().includes(f)
+        || [x.mane,x.ensembl,x.uniprot,x.mskcc].some(v => (v||"").toUpperCase().includes(f)))
+      && (!divOnly || x.type==="msk_override"));
+    $("#ov-count").textContent = `${r.length} of ${rows.length} genes`;
+    $("#ov-body").innerHTML = r.slice(0,700).map(x =>
+      `<tr><td><b>${esc(x.gene)}</b></td>`
+      + cell(x.mane, "MANE Select", x.ensembl)
+      + cell(x.ensembl, x.ensembl_why, "")
+      + cell(x.uniprot, x.uniprot_why, x.ensembl)
+      + cell(x.mskcc, x.mskcc_why, x.ensembl)
+      + `</tr>`).join("")
+      + (r.length>700?`<tr><td colspan="5" class="muted small">Showing first 700 of ${r.length}.</td></tr>`:"");
+    bindTip($$(".tipc", $("#ov-body")));
+  };
+  $("#ov-filter").addEventListener("input", draw);
+  $("#ov-div").addEventListener("change", draw);
+  draw();
+}
+
+function renderAbout(){
+  const s = state.summary; const g37 = s.track !== 'grch38';
+  const truthDesc = g37
+    ? "whose annotations come from MSK's production Genome Nexus pipeline (VEP-based, with MSK's clinical isoform overrides)"
+    : "whose annotations come from the GDC's production VEP pipeline (GENCODE canonical selection, no MSK overrides)";
+  let h = `<div class="card"><h2>About this benchmark — ${esc(TRACKS[TRACK].label)}</h2>
+  <p class="lead">An independent comparison of variant-effect tools against the <b>${esc(s.truth_set)}</b> truth set
+  (${s.n_variants.toLocaleString()} unique variants, ${esc(s.genome)}), ${truthDesc}.
+  ${g37 ? '' : "This is the second of two tracks — see the GRCh37 · MSK-IMPACT track (top right) for MSK's clinical-isoform truth."}</p>
+  <h3>Two-stage design</h3>
+  <p class="lead"><b>Stage 1 — Annotation:</b> for every transcript a tool reports, is the effect (HGVSp, class) right?
+  Scored on <b>${esc(REF())}'s transcript</b>, independent of which transcript the tool would pick. It also measures
+  <b>completeness</b> at the locus — how many transcripts the annotator reports per variant (the <em>Transcripts / variant</em>
+  column, e.g. VEP ~8, OpenCRAVAT ~5) and whether that set actually contains ${esc(REF())}'s transcript (<em>${esc(REF())} tx present</em>).
+  A property of the annotator.</p>
+  <p class="lead"><b>Stage 2 — Selection:</b> which single transcript + effect does the tool report, vs ${esc(REF())}'s pick?
+  A property of the transcript-selection policy layered on the annotator.</p>
+  <h3>Tools</h3>
+  <ul class="lead">${s.tools.map(t=>`<li><b>${esc(t.label)}</b> — ${esc(t.ver?t.ver.software:'')}</li>`).join("")}</ul>
+  <h3>Headline finding</h3>
+  ${g37 ? `<p class="lead">Annotation is largely a solved problem (${esc(REF())}'s transcript is present ~100% of the time and
+  its protein change agrees ~94% on that transcript). The differences between tools are dominated by
+  <b>transcript-selection policy</b>: MSK's Genome Nexus uses a custom isoform-override list. Feeding that list to mafsmith
+  lifts transcript-pick concordance from 68% to 86%. Explore the residual disagreements in the browser.</p>`
+  : `<p class="lead">The truth here is the GDC's VEP pipeline (GENCODE canonical, no MSK overrides), so the pattern
+  <em>inverts</em> the MSK track — but with a twist that looks paradoxical at first. Genome Nexus leads at ~95% transcript-pick,
+  yet the actual <b>reference pipeline — Ensembl VEP + vcf2maf — lands at only 76.3%</b>, tied with vibe-vep (75.9%) and
+  fastVEP+mafsmith (76.2%). How can the reference score so low? <b>Because 76.3% is a transcript-<em>selection</em> number, not
+  an annotation-accuracy one.</b> Stage&nbsp;1 above shows VEP covers ${esc(REF())}'s own transcript 97.8% of the time and, on that
+  transcript, reports the identical protein change <b>99.2%</b> of the time — its annotation is essentially perfect. The gap is
+  entirely <em>which</em> transcript gets picked as "canonical," and that definition changed underneath the same software:
+  the GDC truth was built in 2022 on <b>Ensembl 102 / GENCODE v36</b>, whose canonical transcript is the longest translation;
+  this benchmark's cache is <b>Ensembl 112</b>, where Ensembl redefined canonical to <b>MANE Select</b> (as of release 103).
+  For ~24% of variants the MANE transcript differs from the old longest-canonical, so a different transcript wins even though
+  the coded change is the same (on those same-gene/different-transcript picks the HGVSp still agrees ~65%). Genome Nexus leads
+  only because its MANE-aware canonical happens to track GDC's older selection more closely than raw Ensembl-112 canonical does.
+  The same tool scores differently across the two tracks because "truth" encodes a transcript-selection convention <em>and</em>
+  an annotation vintage — not annotation quality.</p>`}
+  ${g37 ? `<h3>Findings the benchmark surfaced</h3>
+  <ul class="lead">
+  <li><b>fastVEP HGVSp bug on multi-residue in-frame deletions — found here, fixed upstream.</b> fastVEP emitted a
+  malformed protein string (<code>p.Tyr43???</code>) for <b>359</b> In_Frame_Del variants; the fix is
+  <a href="https://github.com/Huang-lab/fastVEP/pull/58" target="_blank" rel="noopener">Huang-lab/fastVEP#58</a> and this
+  site runs the patched binary. The residual gap is a separate 3′-shift normalization issue.</li>
+  <li><b>Gene-symbol vintage.</b> ~6% of "gene mismatches" are pure HGNC renames (MLL2→KMT2D, PARK2→PRKN, …) — same
+  transcript, same protein. Cosmetic, not accuracy.</li>
+  <li><b>MSK's HGVSp_Short conventions.</b> MSK writes splice variants as <code>p.X123_splice</code> and start-lost as
+  <code>p.Met1?</code>; strict-HGVS tools differ. mafsmith reproduces the MSK convention; raw fastVEP does not.</li>
+  </ul>` : ''}
+  <h3>Versions &amp; provenance</h3>
+  <p class="lead small">Genome build: <b>${esc(s.genome)}</b> for all tools. The transcript release differs per tool (below),
+  and even a shared transcript often carries a different <b>.version</b> across releases — see the <b>Isoforms</b> tab for the per-gene canonical transcript${g37?' + version':''} from each source (MANE / Ensembl / UniProt / MSKCC).</p>
+  <div class="scroll-x"><table><thead><tr><th>Tool</th><th>Software version</th><th>Transcript source</th></tr></thead><tbody>
+  ${s.tools.map(t=>`<tr><td><span class="tool-dot" style="background:${toolColor(t.id)}"></span>${esc(t.label)}</td>
+    <td class="small">${esc(t.ver?t.ver.software:'—')}</td><td class="small muted">${esc(t.ver?t.ver.transcripts:'—')}</td></tr>`).join("")}
+  </tbody></table></div>
+  <p class="small muted" style="margin-top:10px">Generated from <code>benchmark/build_site_data.py</code>. Truth: ${esc(s.truth_set)}, ${esc(s.genome)}.
+  Concordance is version-insensitive on transcripts (ENST ignoring the version suffix) and exact on HGVSp_Short.</p>
+  </div>`;
+  $("#about").innerHTML = h;
+}
+
+// ---------- nav ----------
+const RENDERED = {};
+function switchView(name){
+  $$("#nav button").forEach(b => b.classList.toggle("active", b.dataset.view===name));
+  $$(".view").forEach(v => v.classList.toggle("active", v.id===name));
+  if(name==="browser") renderBrowser();
+  else if(name==="compare") renderCompare();
+  else if(name==="datahubdiff") renderDatahubDiff();
+  else if(name==="download") renderDownloads();
+  else if(name==="overrides") renderOverrides();
+  else if(!RENDERED[name]){
+    ({overview:renderOverview, classes:renderClasses, genes:renderGenes, about:renderAbout}[name]||(()=>{}))();
+    RENDERED[name] = true;
+  }
+  history.replaceState(null,"","#"+name);
+}
+$$("#nav button").forEach(b => b.addEventListener("click", () => switchView(b.dataset.view)));
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { RENDERED.overview=RENDERED.classes=false; if($("#overview").classList.contains("active")) renderOverview(); if($("#classes").classList.contains("active")) renderClasses(); });
+
+// ---------- track selector ----------
+function renderTrackSel(){
+  $("#track-sel").innerHTML = Object.entries(TRACKS).map(([id,t]) =>
+    `<button data-track="${id}" class="${id===TRACK?'active':''}">${esc(t.label)}</button>`).join("");
+  $$("#track-sel button").forEach(b => b.addEventListener("click", () => setTrack(b.dataset.track)));
+}
+function setTrack(tr){
+  if(tr===TRACK || !TRACKS[tr]) return;
+  TRACK = tr; localStorage.setItem("track", tr);
+  // reset all per-track caches
+  state.summary = state.byGene = state.byClass = state.variants = state.tref = null;
+  Object.keys(RENDERED).forEach(k => delete RENDERED[k]);
+  Object.keys(txCache).forEach(k => delete txCache[k]);
+  browser.page = 0; browser.filtered = []; browser.geneFilter = "";
+  renderTrackSel();
+  boot(true);  // keepView: reload this track's data and re-render the current view
+}
+
+// ---------- OncoKB oncogenic-only filter ----------
+function renderFilterSel(){
+  const sel = $("#onco-filter"); if(!sel) return;
+  const filters = (state.summary && state.summary.filters) || [];
+  sel.innerHTML = `<option value="">All variants (${(state.summary?state.summary.n_variants:0).toLocaleString()})</option>`
+    + filters.map(f=>`<option value="${f.id}" ${f.id===FILTER?'selected':''}>${esc(f.label)} (${f.n.toLocaleString()})</option>`).join("");
+  if(FILTER && !filters.find(f=>f.id===FILTER)){ FILTER=""; localStorage.setItem("onco_filter",""); }  // filter absent on this track
+  sel.value = FILTER;
+  $("#onco-toggle").classList.toggle("on", !!FILTER);
+}
+function setFilter(v){
+  if(v===FILTER) return;
+  FILTER = v; localStorage.setItem("onco_filter", v);
+  $("#onco-toggle").classList.toggle("on", !!FILTER);
+  // per-variant datasets differ; summary is shared (bars read stage2_onco).
+  state.byGene = state.byClass = state.variants = null;
+  Object.keys(RENDERED).forEach(k => delete RENDERED[k]);
+  browser.page = 0; browser.filtered = []; browser.geneFilter = "";
+  boot(true);
+}
+
+// ---------- boot ----------
+async function boot(keepView){
+  try {
+    // Some tabs are GRCh37-specific; hide them on tracks without them.
+    const isoBtn = $('#nav button[data-view="overrides"]');
+    if(isoBtn) isoBtn.style.display = TRACKS[TRACK].hasIsoforms ? "" : "none";
+    const ddBtn = $('#nav button[data-view="datahubdiff"]');
+    if(ddBtn) ddBtn.style.display = TRACKS[TRACK].hasDatahubDiff ? "" : "none";
+    const [summary, byGene, byClass] = await Promise.all([
+      getJSON(dataURL("summary.json")),
+      getJSON(fdata("by_gene")),
+      getJSON(fdata("by_class")),
+    ]);
+    state.summary = summary; state.byGene = byGene; state.byClass = byClass;
+    renderFilterSel();
+    const cf0 = curFilter();
+    $("#subhead").innerHTML = `Truth set: <b>${esc(summary.truth_set)}</b> · <b>${esc(summary.genome||"GRCh37")}</b> · <b>${summary.n_variants.toLocaleString()}</b> unique variants · <b>${summary.tools.length}</b> tools · <b>${summary.n_genes.toLocaleString()}</b> genes` + (FILTER&&cf0?` · <span style="color:var(--critical)">OncoKB: ${esc(cf0.label)} (${cf0.n.toLocaleString()})</span>`:'');
+    const cur = keepView && $$("#nav button.active")[0] ? $$("#nav button.active")[0].dataset.view : null;
+    const raw = (location.hash||"#overview").slice(1);
+    const [start, sub] = raw.split("/");
+    if(start==="browser" && sub) browser.pendingVk = decodeURIComponent(sub);
+    let target = cur || (["overview","classes","genes","browser","compare","datahubdiff","overrides","download","about"].includes(start)?start:"overview");
+    if(target==="overrides" && !TRACKS[TRACK].hasIsoforms) target = "overview";
+    if(target==="datahubdiff" && !TRACKS[TRACK].hasDatahubDiff) target = "overview";
+    switchView(target);
+  } catch(e){
+    $("main").innerHTML = `<div class="card"><b>Failed to load data.</b> Serve this directory over HTTP so <code>data/&lt;track&gt;/*.json</code> can be fetched. <br><span class="small muted">${esc(e.message)}</span></div>`;
+  }
+}
+// ---------- WebMCP: expose the benchmark to in-browser AI agents ----------
+async function mcpEnsure(){
+  if(!state.summary) state.summary = await getJSON(dataURL("summary.json"));
+  if(!state.byGene) state.byGene = await getJSON(fdata("by_gene"));
+  if(!state.byClass) state.byClass = await getJSON(fdata("by_class"));
+}
+const MCP_TOOLS = [
+  { name:"benchmark_overview",
+    description:"Overview of the active benchmark track: genome build, published-reference source, variant & gene counts, tools compared, OncoKB oncogenic count, and whether the oncogenic-only filter is on.",
+    inputSchema:{type:"object",properties:{}},
+    handler: async () => { await mcpEnsure(); const s=state.summary;
+      return {track:TRACK, reference:TRACKS[TRACK].ref, reference_long:TRACKS[TRACK].refLong, genome:s.genome, dataset:s.truth_set,
+        n_variants:s.n_variants, n_genes:s.n_genes, n_oncogenic:s.n_oncogenic, active_filter:FILTER||null,
+        tools:s.tools.map(t=>({id:t.id,label:t.label,software:t.ver&&t.ver.software}))}; } },
+  { name:"leaderboard",
+    description:"Per-tool concordance vs the published reference — Stage 2 selection (transcript pick, protein HGVSp, variant class, consequence, HGVSc, gene) and Stage 1 annotation quality. oncogenic_only=true scores only OncoKB-oncogenic variants.",
+    inputSchema:{type:"object",properties:{oncogenic_only:{type:"boolean"},filter:{type:"string",description:"OncoKB preset id: onco, level1, level12, level123, resistance (see benchmark_overview.filters)"}}},
+    handler: async (a={}) => { await mcpEnsure(); const s=state.summary; const onc=!!a.oncogenic_only;
+      const s1=Object.fromEntries(s.stage1.map(m=>[m.tool,m]));
+      return s.tools.map(t=>{ const fk=a.filter||(onc?'onco':''); const m=(fk?((t.stage2_filters&&t.stage2_filters[fk])||{}):(t.stage2||{})); const b=s1[t.id]||{};
+        return {tool:t.id,label:t.label, transcript_pick:m.transcript_concordance,
+          protein_hgvsp:Math.max(m.protein_change_concordance||0,m.protein_change_concordance_full||0),
+          variant_class:m.variant_class_concordance, consequence:m.consequence_concordance, hgvsc:m.hgvsc_concordance, gene:m.gene_concordance,
+          stage1_ref_tx_present:b.msk_transcript_present_rate,
+          stage1_protein_on_ref_tx:b.protein_full_concordance_on_msk_tx!=null?Math.max(b.protein_full_concordance_on_msk_tx||0,b.protein_short_concordance_on_msk_tx||0):null};}); } },
+  { name:"compare_tools",
+    description:"Directly compare two tools with no reference: how often they pick the same transcript / protein change / variant class, and the genes where they disagree most. Args toolA, toolB (ids from benchmark_overview).",
+    inputSchema:{type:"object",properties:{toolA:{type:"string"},toolB:{type:"string"}},required:["toolA","toolB"]},
+    handler: async (a) => { await ensureVariants(); const V=state.variants, ti=V.tool_ids, ai=ti.indexOf(a.toolA), bi=ti.indexOf(a.toolB);
+      if(ai<0||bi<0) return {error:"unknown tool id", valid_ids:ti};
+      const n=V.n_total; let dtx=0,dhp=0,dcl=0; const gc={};
+      for(const v of V.variants){ const x=v.pk[ai],y=v.pk[bi]; if(!x||!y) continue;
+        if((x[0]||"")!==(y[0]||"")){dtx++; gc[v.g]=(gc[v.g]||0)+1;} if((x[1]||"")!==(y[1]||"")) dhp++; if((x[2]||"")!==(y[2]||"")) dcl++; }
+      return {toolA:a.toolA,toolB:a.toolB,n_variants:n, transcript_agreement:1-dtx/n, protein_agreement:1-dhp/n, variant_class_agreement:1-dcl/n,
+        n_transcript_disagreements:dtx, top_disagreement_genes:Object.entries(gc).sort((p,q)=>q[1]-p[1]).slice(0,15).map(([g,c])=>({gene:g,disagreements:c}))}; } },
+  { name:"gene_report",
+    description:"Per-tool transcript-pick and protein-HGVSp concordance for one gene, plus its canonical transcript from MANE/Ensembl/UniProt/MSKCC when available. Arg gene (HGNC symbol).",
+    inputSchema:{type:"object",properties:{gene:{type:"string"}},required:["gene"]},
+    handler: async (a) => { await mcpEnsure(); const g=(a.gene||"").toUpperCase(); const s=state.summary; const row=state.byGene.find(r=>r.gene.toUpperCase()===g);
+      if(!state.tref && TRACKS[TRACK].hasIsoforms){ try{state.tref=await getJSON(dataURL("transcript_reference.json"));}catch(e){} }
+      const iso=state.tref?(state.tref.rows.find(r=>r.gene.toUpperCase()===g)||null):null;
+      if(!row) return {gene:a.gene,found:false,canonical:iso};
+      return {gene:row.gene,n_variants:row.n,reference_overrides_transcript:row.override,
+        tools:s.tools.map(t=>({tool:t.id,transcript_pick:row[t.id]&&row[t.id].tx,protein_hgvsp:row[t.id]&&row[t.id].hgvsp})), canonical:iso}; } },
+  { name:"worst_genes",
+    description:"Genes where tools disagree most with the published reference on protein change (hardest genes). Arg limit (default 20).",
+    inputSchema:{type:"object",properties:{limit:{type:"number"}}},
+    handler: async (a={}) => { await mcpEnsure(); const s=state.summary;
+      return state.byGene.slice(0,a.limit||20).map(r=>({gene:r.gene,n_variants:r.n,worst_protein_concordance:r.worst_hgvsp,
+        tools:s.tools.map(t=>({tool:t.id,protein_hgvsp:r[t.id]&&r[t.id].hgvsp}))})); } },
+];
+window.benchmarkMCP = {
+  tools: MCP_TOOLS.map(t=>({name:t.name,description:t.description,inputSchema:t.inputSchema})),
+  call: async (name,args) => { const t=MCP_TOOLS.find(x=>x.name===name); if(!t) throw new Error("unknown tool: "+name); return t.handler(args||{}); },
+};
+(function(){
+  try { const mc = navigator.modelContext;
+    if(mc && typeof mc.registerTool==="function"){
+      MCP_TOOLS.forEach(t => mc.registerTool({name:t.name,description:t.description,inputSchema:t.inputSchema,
+        async execute(args){ return {content:[{type:"text",text:JSON.stringify(await t.handler(args||{}))}]}; }}));
+      console.info("[WebMCP] registered "+MCP_TOOLS.length+" tools via navigator.modelContext"); return;
+    }
+  } catch(e){}
+  console.info("[WebMCP] navigator.modelContext absent — query via window.benchmarkMCP.call(name,args). Tools: "+MCP_TOOLS.map(t=>t.name).join(", "));
+})();
+
+renderTrackSel();
+$("#onco-filter").addEventListener("change", e => setFilter(e.target.value));
+boot();
+</script>
+</body>
+</html>

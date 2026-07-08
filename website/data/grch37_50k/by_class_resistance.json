@@ -1,0 +1,1 @@
+[{"variant_class": "Missense_Mutation", "n": 12, "genome_nexus": {"tx": 1.0, "hgvsp": 1.0, "class": 1.0}, "vep_vcf2maf": {"tx": 1.0, "hgvsp": 1.0, "class": 1.0}, "fastvep_mafsmith": {"tx": 1.0, "hgvsp": 1.0, "class": 1.0}, "vibe_vep": {"tx": 1.0, "hgvsp": 1.0, "class": 1.0}, "fastvep": {"tx": 0.8333333333333334, "hgvsp": 1.0, "class": 1.0}}]

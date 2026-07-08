@@ -1,0 +1,1 @@
+{"10:59664256:59664256:C:A": [{"tx": "ENST00000395348", "g": "SLC16A9", "hp": "p.R136L", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 0}, {"tx": "ENST00000395347", "g": "SLC16A9", "hp": "p.R136L", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus", "opencravat"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"X:1466410:1466412:CGG:TT": [{"tx": "ENST00000381297", "g": "P2RY8", "hp": "p.R50Qfs*14", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000460672", "g": "P2RY8", "hp": "", "cl": "3'Flank", "csq": "downstream_gene_variant", "by": [], "t": 0}]}

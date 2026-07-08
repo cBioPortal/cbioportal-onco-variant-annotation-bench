@@ -1,0 +1,1 @@
+{"7:107628843:107628843:T:A": [{"tx": "ENST00000482371", "g": "BCAP29", "hp": "", "cl": "3'UTR", "csq": "3_prime_UTR_variant,NMD_transcript_variant", "by": ["vibe_vep", "opencravat"], "t": 0}, {"tx": "ENST00000515260", "g": "WBP1LP2", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "fastvep"], "t": 1}]}

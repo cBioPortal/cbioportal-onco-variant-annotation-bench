@@ -1,0 +1,1 @@
+{"21:34716402:34716402:A:G": [{"tx": "ENST00000349499", "g": "CLIC6", "hp": "p.R661G", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 0}, {"tx": "ENST00000360731", "g": "CLIC6", "hp": "p.R679G", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus", "opencravat"], "t": 1}]}

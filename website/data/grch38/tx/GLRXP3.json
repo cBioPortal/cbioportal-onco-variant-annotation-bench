@@ -1,0 +1,1 @@
+{"5:161751601:161751601:C:G": [{"tx": "ENST00000470810", "g": "GLRXP3", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}

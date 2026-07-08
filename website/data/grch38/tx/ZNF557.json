@@ -1,0 +1,1 @@
+{"19:7075708:7075708:G:C": [{"tx": "ENST00000252840", "g": "ZNF557", "hp": "p.E29Q", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 0}, {"tx": "ENST00000414706", "g": "ZNF557", "hp": "p.E22Q", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["genome_nexus"], "t": 1}]}

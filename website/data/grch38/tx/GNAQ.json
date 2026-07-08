@@ -1,0 +1,1 @@
+{"9:77728654:77728655:-:CCTC": [{"tx": "ENST00000286548", "g": "GNAQ", "hp": "p.E250Gfs*8", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"1:89191260:89191260:C:A": [{"tx": "ENST00000355754", "g": "GBP4", "hp": "", "cl": "Splice_Site", "csq": "splice_donor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}, {"tx": "ENST00000481397", "g": "GBP4", "hp": "", "cl": "5'Flank", "csq": "upstream_gene_variant", "by": [], "t": 0}]}

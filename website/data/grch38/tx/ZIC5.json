@@ -1,0 +1,1 @@
+{"13:99965729:99965729:C:A": [{"tx": "ENST00000267294", "g": "ZIC5", "hp": "p.S523I", "cl": "Missense_Mutation", "csq": "missense_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

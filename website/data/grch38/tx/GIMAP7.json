@@ -1,0 +1,1 @@
+{"7:150519976:150519976:T:G": [{"tx": "ENST00000313543", "g": "GIMAP7", "hp": "p.M1R", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

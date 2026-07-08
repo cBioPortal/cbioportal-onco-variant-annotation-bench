@@ -1,0 +1,1 @@
+{"6:37139026:37139027:GC:CCCCGAGCCGGTGCCGAG": [{"tx": "ENST00000373509", "g": "PIM1", "hp": "p.R122Sfs*199", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["genome_nexus", "vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}

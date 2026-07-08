@@ -1,0 +1,1 @@
+{"12:24583637:24583637:G:T": [{"tx": "ENST00000483544", "g": "", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["vep_vcf2maf", "genome_nexus", "opencravat", "fastvep"], "t": 0}, {"tx": "ENST00000542108", "g": "KNOP1P1", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["fastvep_mafsmith", "vibe_vep"], "t": 1}]}

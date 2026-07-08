@@ -1,0 +1,1 @@
+{"14:106235217:106235217:C:T": [{"tx": "ENST00000390607", "g": "IGHV3-21", "hp": "p.W66*", "cl": "Nonsense_Mutation", "csq": "stop_gained", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}

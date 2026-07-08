@@ -1,0 +1,1 @@
+{"1:17359604:17359611:AATCTTGA:-": [{"tx": "ENST00000375499", "g": "SDHB", "hp": "p.K80Sfs*2", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["genome_nexus", "vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}
