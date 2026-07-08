@@ -69,6 +69,29 @@ benchmark/build_site_data.py       # -> website/data/<track>/*.json (the report)
 
 Adding a tool = one parser to the normalized schema, then re-run `build_site_data.py`.
 
+## Contributing
+
+Contributions and corrections are welcome via pull request — new tools, new
+datasets, or fixes. The pipeline is tool-agnostic, so each addition is small and
+self-contained.
+
+- **Add a tool.** Write a parser in `benchmark/annotators/` that maps your tool's
+  output to the normalized schema in `benchmark/common.py` (gene, transcript,
+  HGVSp/HGVSc, variant class, consequence), add it to the tool list in
+  `benchmark/build_site_data.py`, then run `compare_transcripts.py` (Stage 1),
+  `compare_pick.py` (Stage 2), and `build_site_data.py`. It then appears in the
+  leaderboard, the compare view, and the per-gene/per-class drill-downs.
+- **Add a dataset.** Any MAF with the core columns works — `extract_input.py`
+  builds the truth + input (unique variants), then add a track entry (reference
+  label, genome build, isoform-override policy). Useful for testing a new panel or
+  cohort.
+- **Report a discrepancy.** If a "mismatch" is really a reference-data problem
+  (e.g. a malformed value), open an issue — that feedback improves the underlying
+  annotations too. (Example: [cBioPortal/datahub#2343](https://github.com/cBioPortal/datahub/issues/2343).)
+
+Please keep raw variant data and any API keys out of commits (see the `.gitignore`
+and `## Data & keys` below).
+
 ## Data & keys
 
 This repo contains the **summarized report data** (`website/data/`) and the
