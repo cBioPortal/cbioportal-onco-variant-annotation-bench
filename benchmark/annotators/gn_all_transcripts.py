@@ -73,8 +73,8 @@ def annotate_batch(rows, session, api, retries=4):
     for attempt in range(retries):
         try:
             resp = session.post(
-                api, params={"fields": "annotation_summary"}, json=payload,
-                headers={"Accept": "application/json"}, timeout=180,
+                api, params={"fields": "annotation_summary", "isoformOverrideSource": "mskcc"},
+                json=payload, headers={"Accept": "application/json"}, timeout=180,
             )
             resp.raise_for_status()
             return resp.json()

@@ -36,6 +36,11 @@ def norm(s: pd.Series) -> pd.Series:
     return s.fillna("").astype(str).str.strip()
 
 
+def norm_hgvsc(s: pd.Series) -> pd.Series:
+    """Strip 'ENST...:' transcript prefix so 'ENST..:c.1A>T' == 'c.1A>T'."""
+    return norm(s).str.replace(r"^[^:]*:", "", regex=True)
+
+
 def compare(tool: str, parquet: Path, truth_path: Path = TRUTH,
             results_dir: Path = RESULTS) -> None:
     global RESULTS
@@ -55,11 +60,13 @@ def compare(tool: str, parquet: Path, truth_path: Path = TRUTH,
 
     # Per-transcript annotation concordance on MSK's transcript.
     j = allt.merge(
-        truth[["var_key", "tx", "hgvsp", "hgvsp_short", "variant_classification", "consequence"]]
+        truth[["var_key", "tx", "hgvsp", "hgvsp_short", "hgvsc",
+               "variant_classification", "consequence"]]
         .rename(
             columns={
                 "hgvsp": "hgvsp_t",
                 "hgvsp_short": "hgvsp_short_t",
+                "hgvsc": "hgvsc_t",
                 "variant_classification": "vc_t",
                 "consequence": "csq_t",
             }
@@ -92,6 +99,22 @@ def compare(tool: str, parquet: Path, truth_path: Path = TRUTH,
         metrics["variant_class_concordance_on_msk_tx"] = float(
             (norm(cls["variant_classification"]) == norm(cls["vc_t"])).mean()
         )
+    # HGVSc on MSK's transcript — prefix-insensitive, only where truth has a value.
+    hgvsc = j[norm_hgvsc(j["hgvsc_t"]) != ""]
+    if len(hgvsc):
+        metrics["hgvsc_concordance_on_msk_tx"] = float(
+            (norm_hgvsc(hgvsc["hgvsc"]) == norm_hgvsc(hgvsc["hgvsc_t"])).mean()
+        )
+        metrics["n_hgvsc_variants"] = int(len(hgvsc))
+    # Consequence terms on MSK's transcript — exact string match (order + terms).
+    # Skip rows where truth consequence is empty. Tools that don't emit consequence
+    # (e.g. vep_all_transcripts leaves it blank) get 0% — that surfaces the gap.
+    csq = j[norm(j["csq_t"]) != ""]
+    if len(csq):
+        metrics["consequence_concordance_on_msk_tx"] = float(
+            (norm(csq["consequence"]) == norm(csq["csq_t"])).mean()
+        )
+        metrics["n_consequence_variants"] = int(len(csq))
 
     RESULTS.mkdir(parents=True, exist_ok=True)
     (RESULTS / f"transcripts_{tool}.json").write_text(json.dumps(metrics, indent=2))
@@ -104,6 +127,10 @@ def compare(tool: str, parquet: Path, truth_path: Path = TRUTH,
         print(f"  protein (short) on MSK transcript: {metrics['protein_short_concordance_on_msk_tx']:.4%}")
     if "variant_class_concordance_on_msk_tx" in metrics:
         print(f"  variant class on MSK transcript:   {metrics['variant_class_concordance_on_msk_tx']:.4%}")
+    if "hgvsc_concordance_on_msk_tx" in metrics:
+        print(f"  hgvsc on MSK transcript:           {metrics['hgvsc_concordance_on_msk_tx']:.4%}")
+    if "consequence_concordance_on_msk_tx" in metrics:
+        print(f"  consequence on MSK transcript:     {metrics['consequence_concordance_on_msk_tx']:.4%}")
     print(f"  -> results/transcripts_{tool}.json")
 
 

@@ -152,18 +152,25 @@ code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px;
     </div>
     <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end">
       <div class="track-sel" id="track-sel"></div>
-      <label class="onco-sel-wrap" id="onco-toggle" title="Restrict every view to an OncoKB category / therapeutic level">
-        <span>OncoKB:</span><select id="onco-filter"><option value="">All variants</option></select>
-      </label>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="track-sel" id="stage-sel" title="Stage 1 = annotation quality (transcript-level). Stage 2 = pick-selection quality.">
+          <button data-stage="" class="active">Stage 1 + 2</button>
+          <button data-stage="stage1">Stage 1 only</button>
+        </div>
+        <label class="onco-sel-wrap" id="onco-toggle" title="Restrict every view to an OncoKB category / therapeutic level">
+          <span>OncoKB:</span><select id="onco-filter"><option value="">All variants</option></select>
+        </label>
+      </div>
     </div>
   </div>
 </header>
 <nav id="nav">
   <button data-view="overview" class="active">Overview</button>
-  <button data-view="classes">By variant class</button>
-  <button data-view="genes">By gene</button>
-  <button data-view="browser">Discrepancy browser</button>
-  <button data-view="compare">Compare tools</button>
+  <button data-view="coverage" data-stage1-only="true">Transcripts (Stage 1)</button>
+  <button data-view="classes" data-stage2="true">By variant class</button>
+  <button data-view="genes" data-stage2="true">By gene</button>
+  <button data-view="browser" data-stage2="true">Discrepancy browser</button>
+  <button data-view="compare" data-stage2="true">Compare tools</button>
   <button data-view="datahubdiff">2017 → 50K</button>
   <button data-view="overrides">Isoforms</button>
   <button data-view="download">Download / LLM</button>
@@ -171,6 +178,7 @@ code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px;
 </nav>
 <main>
   <section id="overview" class="view active"></section>
+  <section id="coverage" class="view"></section>
   <section id="classes" class="view"></section>
   <section id="genes" class="view"></section>
   <section id="browser" class="view"></section>
@@ -215,6 +223,15 @@ const fsuf = () => FILTER ? "_"+FILTER : "";
 const fdata = base => dataURL(base + fsuf() + ".json");
 const curFilter = () => (state.summary && (state.summary.filters||[]).find(f=>f.id===FILTER)) || null;
 const s2for = t => (FILTER ? ((t.stage2_filters && t.stage2_filters[FILTER]) || {}) : (t.stage2 || {}));
+
+// Stage toggle: STAGE is "" (show Stage 1 + 2) or "stage1" (annotation-only view).
+// In "stage1", Stage-2-marked nav tabs are hidden and Overview drops its Stage 2 card.
+let STAGE = localStorage.getItem("stage") || "";
+if (STAGE !== "stage1") STAGE = "";
+function applyStageVisibility(){
+  $$('#nav button[data-stage2="true"]').forEach(b => b.style.display = STAGE==="stage1" ? "none" : "");
+  $$('#stage-sel button').forEach(b => b.classList.toggle("active", (b.dataset.stage||"") === STAGE));
+}
 
 const state = { summary:null, byGene:null, byClass:null, variants:null, tref:null, tools:[], toolColor:{} };
 const METRIC = {
@@ -348,11 +365,11 @@ function renderOverview(){
     <a onclick="switchView('download')">Download CSV / copy a ready-made LLM prompt / WebMCP</a>${TRACKS[TRACK].hasDatahubDiff?`
     <a onclick="switchView('datahubdiff')">See how the published annotation drifted 2017 → 50K</a>`:''}</div>`;
 
-  // Stage 1 table
+  // Stage 1 table (also shows HGVSc + consequence on the reference transcript)
   h += `<div class="card"><h2>Stage 1 — Annotation (transcript-level)</h2>
     <p class="lead small">For every transcript a tool reports, is the annotation right? Scored on ${TWtx} regardless of what the tool would <em>pick</em>. A property of the annotator.${FILTER?' <b>Stage&nbsp;1 is shown over all variants</b> — annotator quality is transcript-level; the OncoKB filter applies to Stage&nbsp;2 and every other view.':''}</p>
     <div class="scroll-x"><table><thead><tr>
-    <th>Annotator</th><th class="num">Transcripts / variant</th><th class="num">${esc(REF())} tx present</th><th class="num">Protein on ${esc(REF())} tx</th><th class="num">Variant class on ${esc(REF())} tx</th>
+    <th>Annotator</th><th class="num">Transcripts / variant</th><th class="num">${esc(REF())} tx present</th><th class="num">Protein on ${esc(REF())} tx</th><th class="num">Variant class on ${esc(REF())} tx</th><th class="num">HGVSc on ${esc(REF())} tx</th><th class="num">Consequence on ${esc(REF())} tx</th>
     </tr></thead><tbody>`;
   const s1lbl = id => (s.tools.find(t=>t.id===id)||{}).label || id;
   const s1order = id => { const i = s.tools.findIndex(t=>t.id===id); return i<0?99:i; };
@@ -361,20 +378,25 @@ function renderOverview(){
       <td class="num">${m.mean_transcripts_per_variant.toFixed(1)}</td>
       <td class="num pct">${pct(m.msk_transcript_present_rate)}</td>
       <td class="num pct">${pct(Math.max(m.protein_full_concordance_on_msk_tx||0, m.protein_short_concordance_on_msk_tx||0))}</td>
-      <td class="num pct">${m.variant_class_concordance_on_msk_tx!=null?pct(m.variant_class_concordance_on_msk_tx):'<span class="muted">—</span>'}</td></tr>`;
+      <td class="num pct">${m.variant_class_concordance_on_msk_tx!=null?pct(m.variant_class_concordance_on_msk_tx):'<span class="muted">—</span>'}</td>
+      <td class="num pct">${m.hgvsc_concordance_on_msk_tx!=null?pct(m.hgvsc_concordance_on_msk_tx):'<span class="muted">—</span>'}</td>
+      <td class="num pct">${m.consequence_concordance_on_msk_tx!=null?pct(m.consequence_concordance_on_msk_tx):'<span class="muted">—</span>'}</td></tr>`;
   });
   const s1names = [...s.stage1].sort((a,b)=>s1order(a.tool)-s1order(b.tool)).map(m=>s1lbl(m.tool));
   const s1list = s1names.length>1 ? s1names.slice(0,-1).join(", ")+" and "+s1names.slice(-1) : (s1names[0]||"");
   h += `</tbody></table></div>
-    <p class="small muted" style="margin-top:8px">Only annotators that emit <b>every</b> overlapping transcript appear here — ${esc(s1list)} — each parsed from its full per-transcript output before it is collapsed to a single pick. fastVEP+mafsmith reuses fastVEP's annotator, so its Stage&nbsp;1 is fastVEP's row. vibe-vep emits only its single picked transcript (in the MAF), so it appears in Stage&nbsp;2 only. <b>The takeaway:</b> every annotator gets ${REF()}'s own transcript ~98% of the time and reports the identical protein change ~98–99% on it — so the Stage&nbsp;2 spread below is almost entirely transcript <em>selection</em>, not annotation error.</p></div>`;
+    <p class="small muted" style="margin-top:8px">Only annotators that emit <b>every</b> overlapping transcript appear here — ${esc(s1list)} — each parsed from its full per-transcript output before it is collapsed to a single pick. fastVEP+mafsmith reuses fastVEP's annotator, so its Stage&nbsp;1 is fastVEP's row. HGVSc uses prefix-insensitive comparison; consequence is exact string match on the comma-joined SO terms. See the <a onclick="switchView('coverage')" style="color:var(--accent);cursor:pointer">Coverage (Stage 1)</a> view for which transcripts each tool <em>doesn't</em> return.</p></div>`;
 
-  // Stage 2 table
-  h += `<div class="card"><h2>Stage 2 — Selection (pick + effect)</h2>
-    <p class="lead small">Which single transcript + effect does the tool report, vs ${REF()}'s pick? A property of the selection policy on top of the annotator.</p>
-    <div class="legend">` + tools.map(t=>`<span><span class="tool-dot" style="background:${toolColor(t.id)}"></span>${esc(t.label)}</span>`).join("") + `</div>`;
-  h += `<div id="ov-bars"></div></div>`;
+  // Stage 2 table (hidden entirely when the Stage-1-only toggle is on).
+  if (STAGE !== "stage1") {
+    h += `<div class="card"><h2>Stage 2 — Selection (pick + effect)</h2>
+      <p class="lead small">Which single transcript + effect does the tool report, vs ${REF()}'s pick? A property of the selection policy on top of the annotator.</p>
+      <div class="legend">` + tools.map(t=>`<span><span class="tool-dot" style="background:${toolColor(t.id)}"></span>${esc(t.label)}</span>`).join("") + `</div>`;
+    h += `<div id="ov-bars"></div></div>`;
+  }
 
   el.innerHTML = h;
+  if (STAGE === "stage1") return;  // no Stage 2 bars to draw
 
   const metrics = ["transcript_concordance","protein","variant_class_concordance","consequence_concordance","hgvsc_concordance","gene_concordance"];
   const s2 = s2for;
@@ -423,7 +445,7 @@ function renderClasses(){
   });
 }
 function shortLabel(t){
-  return {genome_nexus:"Genome Nexus", vep_vcf2maf:"VEP+vcf2maf", vibe_vep:"vibe-vep", fastvep:"fastVEP", fastvep_mafsmith:"fastVEP+mafsmith"}[t.id] || t.id;
+  return {genome_nexus:"Genome Nexus", gn_vep111:"GN VEP111", vep_vcf2maf:"VEP+vcf2maf", vep_vcf2maf_116:"VEP116+vcf2maf", vibe_vep:"vibe-vep", fastvep:"fastVEP", fastvep_mafsmith:"fastVEP+mafsmith", opencravat:"OpenCRAVAT"}[t.id] || t.id;
 }
 
 let geneSort = {key:"worst_hgvsp", dir:1};
@@ -986,6 +1008,7 @@ function switchView(name){
   else if(name==="datahubdiff") renderDatahubDiff();
   else if(name==="download") renderDownloads();
   else if(name==="overrides") renderOverrides();
+  else if(name==="coverage") renderCoverage();
   else if(!RENDERED[name]){
     ({overview:renderOverview, classes:renderClasses, genes:renderGenes, about:renderAbout}[name]||(()=>{}))();
     RENDERED[name] = true;
@@ -993,6 +1016,7 @@ function switchView(name){
   history.replaceState(null,"","#"+name);
 }
 $$("#nav button").forEach(b => b.addEventListener("click", () => switchView(b.dataset.view)));
+$$("#stage-sel button").forEach(b => b.addEventListener("click", () => setStage(b.dataset.stage || "")));
 matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => { RENDERED.overview=RENDERED.classes=false; if($("#overview").classList.contains("active")) renderOverview(); if($("#classes").classList.contains("active")) renderClasses(); });
 
 // ---------- track selector ----------
@@ -1034,6 +1058,202 @@ function setFilter(v){
   boot(true);
 }
 
+// ---------- Stage 1/2 toggle ----------
+function setStage(v){
+  v = (v === "stage1") ? "stage1" : "";
+  if (v === STAGE) return;
+  STAGE = v; localStorage.setItem("stage", v);
+  applyStageVisibility();
+  // Re-render Overview since its content depends on STAGE.
+  RENDERED.overview = false;
+  if ($("#overview").classList.contains("active")) renderOverview();
+  // If a Stage 2 view is currently active, kick back to Overview.
+  const cur = $$("#nav button.active")[0];
+  if (STAGE === "stage1" && cur && cur.dataset.stage2 === "true") switchView("overview");
+}
+
+// ---------- Coverage (Stage 1) — per-tool transcript completeness ----------
+async function renderCoverage(){
+  const el = $("#coverage");
+  if (!state.coverage) {
+    el.innerHTML = `<div class="loading">Loading coverage data…</div>`;
+    try { state.coverage = await getJSON(dataURL("coverage.json")); }
+    catch (e) { el.innerHTML = `<div class="card">Coverage data not available for this track.</div>`; return; }
+  }
+  const c = state.coverage;
+  const tools = c.tools;
+  const lblOf = id => shortLabel((state.summary.tools.find(t=>t.id===id)||{id}));
+  let h = `<p class="lead">For every variant we take the <b>union of transcripts</b> that every tool reports (there's no external "truth" transcript list). Each metric below asks a Stage-1 question about the transcript set each tool returns.</p>`;
+  h += `<p class="lead small">Aggregated across <b>${c.n_variants_with_union.toLocaleString()}</b> variants where at least one tool emits ≥1 transcript${c.n_override_genes?` · <b>${c.n_override_genes}</b> genes have an explicit MSK isoform override on file`:''}.</p>`;
+  h += `<div class="card"><h3>Aggregate transcripts returned</h3>
+    <div class="scroll-x"><table><thead><tr>
+      <th>Tool</th>
+      <th class="num">MSK override tx present<br><span class="muted small">(override genes only)</span></th>
+      <th class="num">All transcripts present<br><span class="muted small">(vs. union-of-all-tools)</span></th>
+    </tr></thead><tbody>`;
+  const rows = tools.slice().sort((a,b) => (c.aggregate[b].all_transcripts_present - c.aggregate[a].all_transcripts_present));
+  rows.forEach(tid => {
+    const a = c.aggregate[tid];
+    const mskOvr = a.msk_override_tx_present;
+    const allT = a.all_transcripts_present;
+    h += `<tr><td><span class="tool-dot" style="background:${toolColor(tid)}"></span>${esc(lblOf(tid))}</td>
+      <td class="num pct" style="color:${mskOvr!=null&&mskOvr<0.99?'var(--critical)':'inherit'}">${mskOvr==null?'<span class="muted">—</span>':pct2(mskOvr)+` <span class="muted small">n=${a.msk_override_tx_denom.toLocaleString()}</span>`}</td>
+      <td class="num pct" style="color:${allT<0.99?'var(--critical)':'inherit'}">${pct2(allT)} <span class="muted small">n=${a.all_transcripts_present_hit.toLocaleString()}/${c.n_variants_with_union.toLocaleString()}</span></td>
+    </tr>`;
+  });
+  h += `</tbody></table></div>
+    <div class="small muted" style="margin-top:6px">
+      <b>MSK override tx present</b>: fraction of variants (whose gene has an explicit MSK isoform override) where the tool returns the MSK-designated transcript.
+      <b>All transcripts present</b>: fraction of variants where the tool returns <em>every</em> transcript in the union-of-all-tools set for that variant (i.e., no transcript is omitted).
+    </div></div>`;
+  // Per-variant transcripts — variants where at least one tool misses ≥1
+  // transcript OR fails to return the MSK reference transcript. Filterable.
+  h += `<div class="card"><h3>Per-variant transcripts (variants with a gap in ≥1 tool)</h3>
+    <div class="controls">
+      <label>Filter gene <input type="text" id="cov-gene-filter" placeholder="e.g. TP53"></label>
+      <label>Missing tool <select id="cov-tool-filter"><option value="">any</option>${tools.map(t=>`<option value="${t}">${esc(lblOf(t))}</option>`).join("")}</select></label>
+      <label>Gap type <select id="cov-type-filter"><option value="">tx or MSK ref</option><option value="tx">missing transcripts</option><option value="ref">MSK ref missing</option></select></label>
+      <button class="dl-btn" id="cov-download-all">Download all (TSV)</button>
+      <span class="muted small" id="cov-count"></span>
+    </div>
+    <div class="scroll-x"><table><thead><tr>
+      <th>Gene</th><th>Chrom</th><th class="num">Start</th><th class="num">End</th><th>Ref</th><th>Var</th><th class="num">Union tx</th><th>MSK ref tx</th>`
+      + tools.map(t=>`<th class="num"><span class="tool-dot" style="background:${toolColor(t)}"></span>${esc(lblOf(t))}<br><span class="muted small">covered / MSK ref</span></th>`).join("")
+      + `<th>Download</th></tr></thead><tbody id="cov-var-body"></tbody></table></div>
+    <div class="pager"><button id="cov-prev">‹ Prev</button><span id="cov-pageinfo" class="muted"></span><button id="cov-next">Next ›</button></div>
+    <div class="small muted" style="margin-top:6px">Each cell shows covered/union; a ✓ or ✗ indicates whether the tool includes the MSK reference transcript. Rows where every tool has full coverage <em>and</em> covers the MSK reference are omitted (nothing to see). Click <b>Download</b> to save a TSV listing every transcript this variant has and which tools return each one.</div>
+  </div>`;
+  el.innerHTML = h;
+
+  // ---- per-variant table state + rendering ----
+  if (!state.coverageVariants) {
+    try { state.coverageVariants = await getJSON(dataURL("coverage_variants.json")); }
+    catch(e) { state.coverageVariants = {tools, variants: [], n_total: 0, n_shown: 0}; }
+  }
+  const cv = state.coverageVariants;
+  const pageSize = 60;
+  const cvState = { page: 0, filtered: cv.variants };
+  const applyFilters = () => {
+    const gf = ($("#cov-gene-filter").value||"").trim().toUpperCase();
+    const tf = $("#cov-tool-filter").value;
+    const tp = $("#cov-type-filter").value;
+    const ti = cv.tools.indexOf(tf);
+    cvState.filtered = cv.variants.filter(v => {
+      if (gf && !(v[1]||"").toUpperCase().includes(gf)) return false;
+      // v = [vk, gene, chrom, pos, union_size, ref_tx, cov_counts[], ref_flags[]]
+      const nU = v[4];
+      const covs = v[6];
+      const refs = v[7];
+      if (tf) {
+        const missTx = covs[ti] < nU;
+        const missRef = v[5] && !refs[ti];
+        const bad = (tp==="tx") ? missTx : (tp==="ref") ? missRef : (missTx || missRef);
+        if (!bad) return false;
+      } else if (tp) {
+        const any = covs.some((k,i) => tp==="tx" ? k<nU : (v[5] && !refs[i]));
+        if (!any) return false;
+      }
+      return true;
+    });
+    cvState.page = 0;
+    drawPage();
+  };
+  const drawPage = () => {
+    const rows = cvState.filtered;
+    $("#cov-count").textContent = `${rows.length.toLocaleString()} of ${cv.n_shown.toLocaleString()} interesting variants (${cv.n_total.toLocaleString()} total)`;
+    const start = cvState.page * pageSize;
+    const slice = rows.slice(start, start + pageSize);
+    $("#cov-var-body").innerHTML = slice.map(v => {
+      const [vk, gene, chrom, pos, nU, refTx, covs, refs] = v;
+      // var_key = chrom:start:end:ref:alt — parse tail fields to display
+      const vkParts = vk.split(":");
+      const endPos = vkParts[2] || "";
+      const refA = vkParts[3] || "";
+      const altA = vkParts[4] || "";
+      const trunc = (s, n=10) => s.length > n ? esc(s.slice(0, n)) + "…" : esc(s);
+      return `<tr><td><b>${esc(gene)}</b></td>
+        <td class="mono small">${esc(chrom)}</td>
+        <td class="num mono small">${pos}</td>
+        <td class="num mono small">${esc(endPos)}</td>
+        <td class="mono small" title="${esc(refA)}" style="max-width:11ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${trunc(refA)}</td>
+        <td class="mono small" title="${esc(altA)}" style="max-width:11ch;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${trunc(altA)}</td>
+        <td class="num">${nU}</td>
+        <td class="mono small">${esc(refTx||'·')}</td>`
+        + cv.tools.map((tid,i) => {
+            const k = covs[i], missRef = refTx && !refs[i];
+            const pctv = k / nU;
+            return `<td class="num small ${(k<nU||missRef)?'bad':''}">${k}/${nU} · ${pct(pctv)}<br>${refTx ? (refs[i]?'<span class="ok">✓ MSK</span>':'<span class="bad">✗ MSK</span>') : '<span class="muted">—</span>'}</td>`;
+          }).join("")
+        + `<td><button class="dl-btn cov-dl" data-vk="${esc(vk)}" data-g="${esc(gene)}" style="padding:3px 8px;font-size:11px">TSV</button></td>`
+        + `</tr>`;
+    }).join("") || `<tr><td colspan="${cv.tools.length+9}" class="muted">No variants match.</td></tr>`;
+    $("#cov-pageinfo").textContent = rows.length ? `Page ${cvState.page+1} / ${Math.ceil(rows.length/pageSize)}` : "";
+    $("#cov-prev").disabled = cvState.page === 0;
+    $("#cov-next").disabled = start + pageSize >= rows.length;
+    $$(".cov-dl", $("#cov-var-body")).forEach(b => b.addEventListener("click", () => downloadCovVariant(b.dataset.vk, b.dataset.g)));
+  };
+  $("#cov-gene-filter").addEventListener("input", applyFilters);
+  $("#cov-tool-filter").addEventListener("change", applyFilters);
+  $("#cov-type-filter").addEventListener("change", applyFilters);
+  $("#cov-prev").addEventListener("click", () => { cvState.page = Math.max(0, cvState.page-1); drawPage(); });
+  $("#cov-next").addEventListener("click", () => { cvState.page += 1; drawPage(); });
+  // Bulk download of every "interesting" variant — pre-built TSV served from
+  // data/<track>/coverage_download.tsv (one variant per row, wide layout with
+  // per-tool covered count / MSK ref present / emitted / missing transcripts).
+  $("#cov-download-all").addEventListener("click", () => {
+    const a = document.createElement("a");
+    a.href = dataURL("coverage_download.tsv");
+    a.download = `transcripts_stage1_${TRACK}.tsv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+  applyFilters();
+}
+
+// Download a TSV of every transcript this variant has, with per-tool coverage.
+// Reuses the per-gene tx JSON that's already served for the discrepancy browser
+// drill-down (build_site_data.py populates it for both discrepant and
+// coverage-interesting variants).
+async function downloadCovVariant(vk, gene){
+  const safeGene = (gene||"_").replace(/\//g, "_");
+  if (!txCache[safeGene]) {
+    try { txCache[safeGene] = await getJSON(dataURL(`tx/${encodeURIComponent(safeGene)}.json`)); }
+    catch (e) { alert(`No transcript detail available for ${gene}: ${e.message}`); return; }
+  }
+  const rows = (txCache[safeGene]||{})[vk];
+  if (!rows) { alert(`No transcript detail cached for ${vk}`); return; }
+  const [chrom, start, end, refA, altA] = vk.split(":");
+  const toolIds = state.summary.tools.map(t=>t.id);
+  const header = [
+    "Chromosome","Start_Position","End_Position","Reference_Allele","Variant_Allele",
+    "Hugo_Symbol","Transcript_ID","HGVSp_Short","Variant_Classification","Consequence",
+    "Is_Reference_Transcript","Picked_By","Covered_By","Missing_From",
+  ].join("\t");
+  const lines = [header];
+  rows.forEach(r => {
+    const cov = r.cov || [];
+    const missing = toolIds.filter(t => !cov.includes(t));
+    lines.push([
+      chrom, start, end, refA, altA,
+      r.g || gene, r.tx, r.hp || "", r.cl || "", r.csq || "",
+      r.t ? "1" : "0",
+      (r.by||[]).join(";"),
+      cov.join(";"),
+      missing.join(";"),
+    ].join("\t"));
+  });
+  const blob = new Blob([lines.join("\n") + "\n"], {type: "text/tab-separated-values"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `transcripts_${chrom}_${start}_${refA}_${altA}.tsv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
 // ---------- boot ----------
 async function boot(keepView){
   try {
@@ -1042,6 +1262,8 @@ async function boot(keepView){
     if(isoBtn) isoBtn.style.display = TRACKS[TRACK].hasIsoforms ? "" : "none";
     const ddBtn = $('#nav button[data-view="datahubdiff"]');
     if(ddBtn) ddBtn.style.display = TRACKS[TRACK].hasDatahubDiff ? "" : "none";
+    // Stage-1-only toggle: hide Stage 2 nav tabs when enabled.
+    applyStageVisibility();
     const [summary, byGene, byClass] = await Promise.all([
       getJSON(dataURL("summary.json")),
       getJSON(fdata("by_gene")),
@@ -1129,9 +1351,22 @@ window.benchmarkMCP = {
   console.info("[WebMCP] navigator.modelContext absent — query via window.benchmarkMCP.call(name,args). Tools: "+MCP_TOOLS.map(t=>t.name).join(", "));
 })();
 
-renderTrackSel();
-$("#onco-filter").addEventListener("change", e => setFilter(e.target.value));
-boot();
+// Auto-hide a track whose summary.json isn't served (e.g. grch38 skipped in this repro).
+async function pruneUnavailableTracks(){
+  await Promise.all(Object.keys(TRACKS).map(async id => {
+    try {
+      const r = await fetch(`data/${id}/summary.json`, {method: "HEAD"});
+      if (!r.ok) delete TRACKS[id];
+    } catch(e) { delete TRACKS[id]; }
+  }));
+  if (!TRACKS[TRACK]) TRACK = Object.keys(TRACKS)[0] || "grch37";
+}
+(async () => {
+  await pruneUnavailableTracks();
+  renderTrackSel();
+  $("#onco-filter").addEventListener("change", e => setFilter(e.target.value));
+  boot();
+})();
 </script>
 </body>
 </html>

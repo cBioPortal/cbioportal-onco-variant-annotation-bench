@@ -81,7 +81,7 @@ def annotate_batch(rows: list[dict], session: requests.Session, retries: int = 4
         try:
             resp = session.post(
                 API,
-                params={"fields": "annotation_summary"},
+                params={"fields": "annotation_summary", "isoformOverrideSource": "mskcc"},
                 json=payload,
                 headers={"Accept": "application/json"},
                 timeout=120,

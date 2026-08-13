@@ -37,6 +37,8 @@ TRACKS = {
         "tools": [
             {"id": "genome_nexus", "label": "Genome Nexus (truth pipeline)", "light": "#2a78d6", "dark": "#3987e5",
              "ver": {"software": "Genome Nexus (MSK production, 2017)", "transcripts": "Ensembl GRCh37 + MSK isoform overrides"}},
+            {"id": "gn_vep111", "label": "Genome Nexus (VEP 111 endpoint)", "light": "#00a3c4", "dark": "#33c4e6",
+             "ver": {"software": "vep111.genomenexus.org (isoformOverrideSource=mskcc)", "transcripts": "Ensembl GRCh37 release 111 + MSK isoform overrides"}},
             {"id": "vep_vcf2maf", "label": "Ensembl VEP 111 + vcf2maf (reference)", "light": "#eb6834", "dark": "#d95926",
              "ver": {"software": "Ensembl VEP 111.0 + vcf2maf @589406f", "transcripts": "VEP indexed cache release 111 (GRCh37 gene set)"}},
             {"id": "vep_vcf2maf_116", "label": "Ensembl VEP 116 + vcf2maf (latest)", "light": "#c0399a", "dark": "#db5cb5",
@@ -93,6 +95,8 @@ TRACKS = {
         "tools": [
             {"id": "genome_nexus", "label": "Genome Nexus (truth pipeline)", "light": "#2a78d6", "dark": "#3987e5",
              "ver": {"software": "Genome Nexus (MSK production, 2026)", "transcripts": "Ensembl GRCh37 + MSK isoform overrides"}},
+            {"id": "gn_vep111", "label": "Genome Nexus (VEP 111 endpoint)", "light": "#00a3c4", "dark": "#33c4e6",
+             "ver": {"software": "vep111.genomenexus.org (isoformOverrideSource=mskcc)", "transcripts": "Ensembl GRCh37 release 111 + MSK isoform overrides"}},
             {"id": "vep_vcf2maf", "label": "Ensembl VEP 116 + vcf2maf (reference)", "light": "#eb6834", "dark": "#d95926",
              "ver": {"software": "Ensembl VEP 116.0 + vcf2maf @589406f", "transcripts": "VEP indexed cache release 116 (GRCh37 gene set)"}},
             {"id": "fastvep_mafsmith", "label": "fastVEP + mafsmith (+ MSK isoforms)", "light": "#008300", "dark": "#22a022",
@@ -133,6 +137,25 @@ def build(track: str) -> None:
     truth = pd.read_parquet(TRUTH)
     truth["tx"] = truth["transcript_id"].map(strip_transcript_version)
     tools = [t for t in TOOLS if (TOOLS_DIR / t["id"] / "annotations.parquet").exists()]
+
+    # ---- Per-tool all-transcripts tables (drives Stage 1 coverage + drill-down) ----
+    # tid -> DataFrame(var_key, tx, hgvsp_short, variant_classification, consequence, hugo_symbol)
+    tool_allt: dict[str, pd.DataFrame] = {}
+    # tid -> {var_key: set(tx)} for O(1) coverage lookups
+    tool_tx_by_var: dict[str, dict] = {}
+    for t in tools:
+        p = TOOLS_DIR / t["id"] / "all_transcripts.parquet"
+        if not p.exists():
+            continue
+        a = pd.read_parquet(p)
+        a["tx"] = a["transcript_id"].map(strip_transcript_version)
+        tool_allt[t["id"]] = a
+        tool_tx_by_var[t["id"]] = {vk: s for vk, s in a.groupby("var_key")["tx"].agg(set).items()}
+    # Per-variant union transcript set across every tool.
+    union_tx_by_var: dict[str, set] = {}
+    for tid, m in tool_tx_by_var.items():
+        for vk, s in m.items():
+            union_tx_by_var.setdefault(vk, set()).update(s)
 
     # Unified per-variant frame: truth + each tool's pick + match flags.
     base = truth[
@@ -338,6 +361,168 @@ def build(track: str) -> None:
     for fid, _, m in FILTERS:
         (OUT / f"by_gene_{fid}.json").write_text(json.dumps(compute_by_gene(df[m])))
 
+    # ---- coverage.json — per-tool coverage vs. union-of-all-tools transcripts ----
+    #
+    # For each variant, the "expected" transcript set is the UNION of what every
+    # tool emits (no external ground truth). A tool's coverage on that variant is
+    # |tool_tx ∩ union| / |union|. Aggregate = mean over variants where union > 0.
+    # Also aggregated per gene (using the truth's Hugo_Symbol per variant), and we
+    # record the count of (var, tx) rows each tool emits vs. omits, plus how often
+    # the tool covers the MSK reference transcript (from the truth MAF, which
+    # already reflects mskcc isoform overrides).
+    gene_by_vk = dict(zip(df["var_key"], df["gene"]))
+    truth_tx_by_vk = dict(zip(df["var_key"], df["truth_tx"]))
+    # Which genes have an explicit MSK isoform override on file — subset metric.
+    override_genes: set[str] = set()
+    if OVERRIDE_FILE and OVERRIDE_FILE.exists():
+        _ov = pd.read_csv(OVERRIDE_FILE, sep="\t", dtype=str).fillna("")
+        override_genes = {r.gene_name for r in _ov.itertuples(index=False) if r.gene_name}
+    coverage_tools = list(tool_tx_by_var.keys())
+    n_var_with_union = 0
+    tool_cov_sum = {tid: 0.0 for tid in coverage_tools}
+    tool_emitted = {tid: 0 for tid in coverage_tools}      # total (var, tx) rows the tool emits
+    tool_omitted = {tid: 0 for tid in coverage_tools}      # union rows the tool doesn't have
+    tool_union_sum = {tid: 0 for tid in coverage_tools}    # sum of |union| across variants
+    # MSK reference-transcript presence — per tool, on every variant AND on the
+    # subset where the gene has an explicit isoform override.
+    tool_msk_ref_hit = {tid: 0 for tid in coverage_tools}
+    tool_msk_ref_denom = {tid: 0 for tid in coverage_tools}
+    tool_msk_ovr_hit = {tid: 0 for tid in coverage_tools}
+    tool_msk_ovr_denom = {tid: 0 for tid in coverage_tools}
+    # "All transcripts present" — variants where the tool covers 100% of the union.
+    tool_all_present_hit = {tid: 0 for tid in coverage_tools}
+    per_gene = {}
+    for vk, u in union_tx_by_var.items():
+        n_u = len(u)
+        if not n_u:
+            continue
+        n_var_with_union += 1
+        gene = gene_by_vk.get(vk, "") or ""
+        truth_tx = truth_tx_by_vk.get(vk, "") or ""
+        is_override_gene = gene in override_genes
+        g = per_gene.setdefault(gene, {"n_variants": 0, **{tid: {"cov_sum": 0.0, "emitted": 0, "omitted": 0, "union_sum": 0} for tid in coverage_tools}})
+        g["n_variants"] += 1
+        for tid in coverage_tools:
+            tx = tool_tx_by_var[tid].get(vk, set())
+            k = len(tx & u)
+            emitted = len(tx)
+            omitted = n_u - k
+            frac = k / n_u
+            tool_cov_sum[tid] += frac
+            tool_emitted[tid] += emitted
+            tool_omitted[tid] += omitted
+            tool_union_sum[tid] += n_u
+            if k == n_u:
+                tool_all_present_hit[tid] += 1
+            if truth_tx:
+                tool_msk_ref_denom[tid] += 1
+                if truth_tx in tx:
+                    tool_msk_ref_hit[tid] += 1
+                if is_override_gene:
+                    tool_msk_ovr_denom[tid] += 1
+                    if truth_tx in tx:
+                        tool_msk_ovr_hit[tid] += 1
+            g[tid]["cov_sum"] += frac
+            g[tid]["emitted"] += emitted
+            g[tid]["omitted"] += omitted
+            g[tid]["union_sum"] += n_u
+    coverage = {
+        "tools": coverage_tools,
+        "n_variants_with_union": n_var_with_union,
+        "n_override_genes": len(override_genes),
+        "aggregate": {
+            tid: {
+                "mean_coverage": tool_cov_sum[tid] / n_var_with_union if n_var_with_union else 0.0,
+                "micro_coverage": (tool_union_sum[tid] - tool_omitted[tid]) / tool_union_sum[tid] if tool_union_sum[tid] else 0.0,
+                "n_emitted": tool_emitted[tid],
+                "n_omitted": tool_omitted[tid],
+                "n_union": tool_union_sum[tid],
+                "msk_ref_tx_present": (tool_msk_ref_hit[tid] / tool_msk_ref_denom[tid]) if tool_msk_ref_denom[tid] else None,
+                "msk_ref_tx_denom": tool_msk_ref_denom[tid],
+                "msk_override_tx_present": (tool_msk_ovr_hit[tid] / tool_msk_ovr_denom[tid]) if tool_msk_ovr_denom[tid] else None,
+                "msk_override_tx_denom": tool_msk_ovr_denom[tid],
+                "all_transcripts_present": tool_all_present_hit[tid] / n_var_with_union if n_var_with_union else 0.0,
+                "all_transcripts_present_hit": tool_all_present_hit[tid],
+            }
+            for tid in coverage_tools
+        },
+    }
+    (OUT / "coverage.json").write_text(json.dumps(coverage))
+
+    # ---- coverage_variants.json — per-variant coverage detail ----
+    #
+    # One row per "interesting" variant: max per-tool coverage < 1 OR at least
+    # one tool doesn't return the MSK reference transcript. Fully-covered
+    # variants are dropped because every column would read 100% + ✓.
+    # Compact array shape to keep the file small:
+    #   [vk, gene, chrom, pos, union_size, ref_tx,
+    #    per_tool_covered_count[len(tools)],
+    #    per_tool_ref_present_flag[len(tools)] (0/1)]
+    cov_variants = []
+    for vk, u in union_tx_by_var.items():
+        n_u = len(u)
+        if not n_u:
+            continue
+        truth_tx = truth_tx_by_vk.get(vk, "") or ""
+        cov_counts = []
+        ref_flags = []
+        any_gap = False
+        for tid in coverage_tools:
+            tx = tool_tx_by_var[tid].get(vk, set())
+            k = len(tx & u)
+            cov_counts.append(k)
+            in_ref = int(bool(truth_tx and truth_tx in tx))
+            ref_flags.append(in_ref)
+            if k < n_u or (truth_tx and not in_ref):
+                any_gap = True
+        if not any_gap:
+            continue
+        chrom, start, _end, _ref, _alt = vk.split(":")
+        cov_variants.append([
+            vk, gene_by_vk.get(vk, "") or "", chrom, int(start), n_u, truth_tx,
+            cov_counts, ref_flags,
+        ])
+    cov_variants.sort(key=lambda v: (v[1], v[3]))
+    (OUT / "coverage_variants.json").write_text(json.dumps({
+        "tools": coverage_tools,
+        "n_total": n_var_with_union,
+        "n_shown": len(cov_variants),
+        "variants": cov_variants,
+    }))
+
+    # ---- coverage_download.tsv — one row per interesting variant, wide layout ----
+    # Every column that lets a user reproduce the per-tool coverage gap:
+    # variant coords, union transcript set, MSK reference tx, and per tool:
+    # covered count, whether MSK ref is present, emitted transcripts (⊆ union),
+    # and missing transcripts (union − emitted).
+    header = ["Chromosome", "Start_Position", "End_Position",
+              "Reference_Allele", "Variant_Allele",
+              "Hugo_Symbol", "Union_Transcript_Count",
+              "Union_Transcripts", "MSK_Reference_Transcript"]
+    for tid in coverage_tools:
+        header += [f"{tid}__Covered_Count",
+                   f"{tid}__MSK_Reference_Present",
+                   f"{tid}__Emitted_Transcripts",
+                   f"{tid}__Missing_Transcripts"]
+    lines = ["\t".join(header)]
+    for v in cov_variants:
+        vk, gene, chrom, pos, n_u, ref_tx, _covs, _refs = v
+        _c, start, end, ref_a, alt_a = vk.split(":")
+        union_set = union_tx_by_var[vk]
+        row = [chrom, str(start), end, ref_a, alt_a, gene, str(n_u),
+               ";".join(sorted(union_set)), ref_tx or ""]
+        for tid in coverage_tools:
+            tool_set = tool_tx_by_var[tid].get(vk, set()) & union_set
+            missing = union_set - tool_set
+            row += [
+                str(len(tool_set)),
+                "1" if (ref_tx and ref_tx in tool_set) else "0",
+                ";".join(sorted(tool_set)),
+                ";".join(sorted(missing)),
+            ]
+        lines.append("\t".join(row))
+    (OUT / "coverage_download.tsv").write_text("\n".join(lines) + "\n")
+
     # ---- variants.json (discrepancies + transcript drill-down) ----
     tool_ids = [t["id"] for t in tools]
     disc_mask = pd.Series(False, index=df.index)
@@ -345,16 +530,46 @@ def build(track: str) -> None:
         disc_mask |= ~df[f"{tid}__tx_match"] | ~df[f"{tid}__hgvsp_match"]
     disc = df[disc_mask].copy()
 
-    # fastVEP all-transcripts for per-variant drill-down (GRCh37 has it; GRCh38
-    # tools only emit their picked transcript, so the drill-down there is built
-    # from truth + each tool's pick below).
+    # Union all-transcripts view for the per-variant drill-down. Every tool's
+    # all_transcripts.parquet contributes rows; we take the first tool's annotation
+    # per (var_key, tx) and record `cov` = every tool that also emits that transcript
+    # (so the front-end can highlight coverage gaps: cov ⊂ tool_ids => that tool
+    # doesn't return this transcript for this variant).
+    #
+    # `interesting_keys` = Stage-2 discrepant OR Stage-1 coverage-interesting (union),
+    # so the Transcripts (Stage 1) view's per-row download can lazy-load transcript
+    # detail for any variant it displays.
+    disc_keys = set(disc["var_key"])
+    cov_interesting_keys = {v[0] for v in cov_variants}
+    interesting_keys = disc_keys | cov_interesting_keys
+    # (vk, tx) -> {"g": gene, "hp": ..., "cl": ..., "csq": ..., "cov": set()}
+    tx_annot: dict[tuple[str, str], dict] = {}
+    for tid, a in tool_allt.items():
+        sub = a[a["var_key"].isin(interesting_keys)]
+        for r in sub.itertuples(index=False):
+            key = (r.var_key, r.tx)
+            entry = tx_annot.get(key)
+            if entry is None:
+                tx_annot[key] = {
+                    "g": r.hugo_symbol or "",
+                    "hp": r.hgvsp_short or "",
+                    "cl": r.variant_classification or "",
+                    "csq": r.consequence or "",
+                    "cov": [tid],
+                }
+            else:
+                entry["cov"].append(tid)
+                # Backfill missing annotation fields from later tools.
+                if not entry["hp"] and r.hgvsp_short:
+                    entry["hp"] = r.hgvsp_short
+                if not entry["cl"] and r.variant_classification:
+                    entry["cl"] = r.variant_classification
+                if not entry["csq"] and r.consequence:
+                    entry["csq"] = r.consequence
+    # var_key -> list of (tx, annot dict) for the drill-down loop below.
     allt_by_var: dict = {}
-    if ALLT and ALLT.exists():
-        allt = pd.read_parquet(ALLT)
-        allt["tx"] = allt["transcript_id"].map(strip_transcript_version)
-        allt_by_var = {
-            vk: g for vk, g in allt[allt["var_key"].isin(set(disc["var_key"]))].groupby("var_key")
-        }
+    for (vk, tx), ent in tx_annot.items():
+        allt_by_var.setdefault(vk, []).append((tx, ent))
     # Per-variant, per-tool picked transcript (to mark rows in the drill-down).
     pick_tx = {tid: dict(zip(df["var_key"], df[f"{tid}__tx"])) for tid in tool_ids}
 
@@ -392,24 +607,24 @@ def build(track: str) -> None:
                 "pk": picks,
             }
         )
-        # transcript detail
+        # transcript detail — union of every tool's transcripts for this variant
         tx_rows = []
-        gsub = allt_by_var.get(vk)
+        gsub = allt_by_var.get(vk) or []
         seen = set()
-        if gsub is not None:
-            for tr in gsub.itertuples(index=False):
-                tx_rows.append(
-                    {
-                        "tx": tr.tx,
-                        "g": tr.hugo_symbol or "",
-                        "hp": tr.hgvsp_short or "",
-                        "cl": tr.variant_classification or "",
-                        "csq": tr.consequence or "",
-                        "by": [tid for tid in tool_ids if pick_tx[tid].get(vk) == tr.tx],
-                        "t": int(tr.tx == r.truth_tx),
-                    }
-                )
-                seen.add(tr.tx)
+        for tx, ent in gsub:
+            tx_rows.append(
+                {
+                    "tx": tx,
+                    "g": ent["g"],
+                    "hp": ent["hp"],
+                    "cl": ent["cl"],
+                    "csq": ent["csq"],
+                    "by": [tid for tid in tool_ids if pick_tx[tid].get(vk) == tx],
+                    "cov": ent["cov"],
+                    "t": int(tx == r.truth_tx),
+                }
+            )
+            seen.add(tx)
         if r.truth_tx and r.truth_tx not in seen:
             tx_rows.append(
                 {
@@ -419,12 +634,13 @@ def build(track: str) -> None:
                     "cl": r.truth_class,
                     "csq": r.truth_csq,
                     "by": [tid for tid in tool_ids if pick_tx[tid].get(vk) == r.truth_tx],
+                    "cov": [],
                     "t": 1,
                 }
             )
             seen.add(r.truth_tx)
-        # Ensure each tool's picked transcript appears (needed when there is no
-        # all-transcripts table, e.g. the GRCh38 tools).
+        # Ensure each tool's picked transcript appears (some tools only emit their
+        # pick, so they contribute nothing to the union above).
         for tid in tool_ids:
             ptx = pick_tx[tid].get(vk)
             if ptx and ptx not in seen:
@@ -436,11 +652,59 @@ def build(track: str) -> None:
                         "cl": getattr(r, f"{tid}__class") or "",
                         "csq": "",
                         "by": [x for x in tool_ids if pick_tx[x].get(vk) == ptx],
+                        "cov": [tid],
                         "t": 0,
                     }
                 )
                 seen.add(ptx)
         tx_by_gene.setdefault(r.gene or "_", {})[vk] = tx_rows
+
+    # Also populate tx_by_gene for coverage-interesting variants that aren't in
+    # the Stage-2 discrepancy set (so the Transcripts (Stage 1) per-row download
+    # has data for every row it shows). No truth-vs-tool __hgvsp / __class delta
+    # to record here, so we just build the union + per-tool pick markers.
+    cov_only_keys = cov_interesting_keys - disc_keys
+    if cov_only_keys:
+        cov_only_df = df[df["var_key"].isin(cov_only_keys)][["var_key", "gene", "truth_tx", "truth_hgvsp_short", "truth_class", "truth_csq"]]
+        for r in cov_only_df.itertuples(index=False):
+            vk = r.var_key
+            tx_rows = []
+            gsub = allt_by_var.get(vk) or []
+            seen = set()
+            for tx, ent in gsub:
+                tx_rows.append({
+                    "tx": tx,
+                    "g": ent["g"],
+                    "hp": ent["hp"],
+                    "cl": ent["cl"],
+                    "csq": ent["csq"],
+                    "by": [tid for tid in tool_ids if pick_tx[tid].get(vk) == tx],
+                    "cov": ent["cov"],
+                    "t": int(tx == r.truth_tx),
+                })
+                seen.add(tx)
+            if r.truth_tx and r.truth_tx not in seen:
+                tx_rows.append({
+                    "tx": r.truth_tx,
+                    "g": r.gene,
+                    "hp": r.truth_hgvsp_short,
+                    "cl": r.truth_class,
+                    "csq": r.truth_csq,
+                    "by": [tid for tid in tool_ids if pick_tx[tid].get(vk) == r.truth_tx],
+                    "cov": [],
+                    "t": 1,
+                })
+                seen.add(r.truth_tx)
+            for tid in tool_ids:
+                ptx = pick_tx[tid].get(vk)
+                if ptx and ptx not in seen:
+                    tx_rows.append({
+                        "tx": ptx, "g": r.gene, "hp": "", "cl": "", "csq": "",
+                        "by": [x for x in tool_ids if pick_tx[x].get(vk) == ptx],
+                        "cov": [tid], "t": 0,
+                    })
+                    seen.add(ptx)
+            tx_by_gene.setdefault(r.gene or "_", {})[vk] = tx_rows
 
     variants.sort(key=lambda v: (v["g"], v["p"]))
     payload = {

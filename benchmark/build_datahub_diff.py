@@ -11,8 +11,8 @@ per-gene transcript switches that drive most of the protein-change differences).
 """
 from __future__ import annotations
 
+import argparse
 import json
-import os
 import time
 from pathlib import Path
 
@@ -21,9 +21,8 @@ import requests
 
 ROOT = Path(__file__).resolve().parent.parent
 VER_CACHE = ROOT / "data" / "transcript_ref" / "enst_versions_grch37.json"
-HUB = Path(os.path.expanduser("~/git/datahub/public"))
-M2017 = HUB / "msk_impact_2017" / "data_mutations.txt"
-M50K = HUB / "msk_impact_50k_2026" / "data_mutations.txt"
+M2017 = ROOT / "data" / "mskimpact-2017.txt"
+M50K = ROOT / "data" / "mskimpact-50k.txt"
 OUT = ROOT / "website" / "data" / "grch37" / "datahub_diff.json"
 
 COLS = ["Chromosome", "Start_Position", "End_Position", "Reference_Allele",
@@ -68,7 +67,14 @@ def fetch_versions(ids: set[str]) -> dict:
 
 
 def main() -> None:
-    a, b = load(M2017), load(M50K)
+    global OUT
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--maf-2017", default=str(M2017))
+    ap.add_argument("--maf-50k", default=str(M50K))
+    ap.add_argument("--out", default=str(OUT))
+    args = ap.parse_args()
+    OUT = Path(args.out)
+    a, b = load(Path(args.maf_2017)), load(Path(args.maf_50k))
     shared = a.index.intersection(b.index)
     A, B = a.loc[shared], b.loc[shared]
 
