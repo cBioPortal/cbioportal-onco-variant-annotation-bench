@@ -1,1 +1,1 @@
-{"2:37065754:37065754:C:A": [{"tx": "ENST00000233099", "g": "HEATR5B", "hp": "", "cl": "Splice_Site", "csq": "splice_donor_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}
+{"2:37065754:37065754:C:A": [{"tx": "ENST00000233099", "txv": "ENST00000233099.6", "g": "HEATR5B", "hp": "", "cl": "Splice_Site", "csq": "splice_donor_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

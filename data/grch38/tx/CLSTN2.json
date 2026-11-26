@@ -1,0 +1,1 @@
+{"3:140566252:140566252:A:G": [{"tx": "ENST00000458420", "txv": "ENST00000458420.7", "g": "CLSTN2", "hp": "p.*956Wext*14", "cl": "Nonstop_Mutation", "csq": "stop_lost", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

@@ -1,0 +1,1 @@
+{"1:248145149:248145149:T:G": [{"tx": "ENST00000366476", "txv": "ENST00000366476.1", "g": "OR2M5", "hp": "p.M1?", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

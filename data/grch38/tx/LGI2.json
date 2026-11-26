@@ -1,0 +1,1 @@
+{"4:25012500:25012500:C:A": [{"tx": "ENST00000382114", "txv": "ENST00000382114.9", "g": "LGI2", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}, {"tx": "ENST00000512108", "txv": "ENST00000512108.1", "g": "LGI2", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": [], "t": 0}]}

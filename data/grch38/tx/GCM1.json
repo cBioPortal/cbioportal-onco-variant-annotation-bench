@@ -1,0 +1,1 @@
+{"6:53145611:53145660:AATCAAAGTCGTCAGGTTCCATGATAAGGTCAGGCCAGCCAAGGTTTTCA:-": [{"tx": "ENST00000259803", "txv": "ENST00000259803.8", "g": "GCM1", "hp": "", "cl": "Translation_Start_Site", "csq": "start_lost&5_prime_UTR_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

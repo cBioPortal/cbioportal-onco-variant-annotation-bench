@@ -1,0 +1,1 @@
+{"X:74304645:74304646:CA:T": [{"tx": "ENST00000339534", "txv": "ENST00000339534.4", "g": "ZCCHC13", "hp": "p.Q127Wfs*45", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

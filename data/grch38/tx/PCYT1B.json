@@ -1,0 +1,1 @@
+{"X:24672624:24672624:G:T": [{"tx": "ENST00000379145", "txv": "ENST00000379145.5", "g": "PCYT1B", "hp": "p.G3=", "cl": "Silent", "csq": "synonymous_variant", "by": ["vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}, {"tx": "ENST00000747529", "g": "PCYT1B", "hp": "", "cl": "3'Flank", "csq": "", "by": ["genome_nexus"], "t": 0}]}

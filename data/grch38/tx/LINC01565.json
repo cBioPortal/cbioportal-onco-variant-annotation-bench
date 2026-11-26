@@ -1,0 +1,1 @@
+{"3:128573413:128573413:T:C": [{"tx": "ENST00000356020", "txv": "ENST00000356020.2", "g": "LINC01565", "hp": "", "cl": "RNA", "csq": "non_coding_transcript_exon_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

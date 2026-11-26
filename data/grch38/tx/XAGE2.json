@@ -1,0 +1,1 @@
+{"X:52370016:52370016:T:A": [{"tx": "ENST00000286049", "txv": "ENST00000286049.3", "g": "XAGE2", "hp": "p.M1?", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

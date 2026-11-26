@@ -1,0 +1,1 @@
+{"20:33851067:33851067:G:T": [{"tx": "ENST00000217402", "txv": "ENST00000217402.3", "g": "CHMP4B", "hp": "", "cl": "Splice_Site", "csq": "splice_donor_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

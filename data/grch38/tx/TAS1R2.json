@@ -1,0 +1,1 @@
+{"1:18840251:18840252:CC:T": [{"tx": "ENST00000375371", "txv": "ENST00000375371.4", "g": "TAS1R2", "hp": "p.G623Sfs*72", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}
