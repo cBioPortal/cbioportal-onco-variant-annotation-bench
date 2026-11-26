@@ -1,0 +1,1 @@
+{"16:31414991:31414991:T:A": [{"tx": "ENST00000389202", "txv": "ENST00000389202.3", "g": "ITGAD", "hp": "p.S761=", "cl": "Splice_Region", "csq": "splice_region_variant&synonymous_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

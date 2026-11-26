@@ -1,1 +1,1 @@
-{"6:26225384:26225384:T:C": [{"tx": "ENST00000360408", "g": "HIST1H3E", "hp": "p.M1T", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["genome_nexus", "vep_vcf2maf", "fastvep_mafsmith", "vibe_vep", "fastvep"], "t": 1}]}
+{"6:26225384:26225384:T:C": [{"tx": "ENST00000360408", "txv": "ENST00000360408.1", "g": "HIST1H3E", "hp": "p.M1?", "cl": "Translation_Start_Site", "csq": "start_lost", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep", "vep_rs_msk"], "t": 1}]}

@@ -17,7 +17,7 @@ from pathlib import Path
 
 import pandas as pd
 
-from common import STD_FIELDS, strip_transcript_version  # noqa: F401
+from common import STD_FIELDS, strip_transcript_version, with_optional  # noqa: F401
 
 ROOT = Path(__file__).resolve().parent.parent
 OVERRIDE_URL = "https://github.com/genome-nexus/genome-nexus-importer/blob/master/data/common_input/isoform_overrides_at_mskcc_grch37.txt"
@@ -31,7 +31,7 @@ TRACKS = {
         "tools_dir": ROOT / "data" / "tools",
         "results": ROOT / "results",
         "out": ROOT / "website" / "data" / "grch37",
-        "allt": ROOT / "data" / "tools" / "fastvep" / "all_transcripts.parquet",
+        "allt": ROOT / "data" / "tools" / "vep_rs" / "all_transcripts.parquet",
         "override_file": ROOT / "data" / "msk_overrides" / "isoform_overrides_at_mskcc_grch37.txt",
         "no_override_pick": 0.6823,
         "tools": [
@@ -41,12 +41,16 @@ TRACKS = {
              "ver": {"software": "Ensembl VEP 111.0 + vcf2maf @589406f", "transcripts": "VEP indexed cache release 111 (GRCh37 gene set)"}},
             {"id": "vep_vcf2maf_116", "label": "Ensembl VEP 116 + vcf2maf (latest)", "light": "#c0399a", "dark": "#db5cb5",
              "ver": {"software": "Ensembl VEP 116.0 + vcf2maf @589406f", "transcripts": "VEP indexed cache release 116 (GRCh37 gene set)"}},
-            {"id": "fastvep_mafsmith", "label": "fastVEP + mafsmith (+ MSK isoforms)", "light": "#008300", "dark": "#22a022",
-             "ver": {"software": "fastVEP 0.2.0 @d0cd1f7 + mafsmith @e009e98", "transcripts": "Ensembl GRCh37 release 87 (GFF3)"}},
-            {"id": "vibe_vep", "label": "vibe-vep (single Go binary)", "light": "#4a3aa7", "dark": "#9085e9",
-             "ver": {"software": "vibe-vep @c3ca6d8", "transcripts": "GENCODE v19 (GRCh37)"}},
-            {"id": "fastvep", "label": "fastVEP (--pick, no override option)", "light": "#1baf7a", "dark": "#199e70",
-             "ver": {"software": "fastVEP 0.2.0 @d0cd1f7 (--pick)", "transcripts": "Ensembl GRCh37 release 87 (GFF3)"}},
+            {"id": "vibe_vep", "label": "vibe-vep main (single Go binary)", "light": "#4a3aa7", "dark": "#9085e9",
+             "ver": {"software": "vibe-vep @ca01aa1 (main)", "transcripts": "GENCODE v19 (GRCh37)"}},
+            {"id": "vibe_vep_pr17", "label": "vibe-vep PR #17 (full gn replace)", "light": "#7b5bd6", "dark": "#b3a4f0",
+             "ver": {"software": "vibe-vep @48f0b14 (PR #17, full-gn-replace)", "transcripts": "GENCODE v19 (GRCh37)"}},
+            {"id": "vep_rs", "label": "vep-rs (Rust, GENCODE v19 cache)", "light": "#b8860b", "dark": "#d4a017",
+             "ver": {"software": "vep-rs 1.0.0 @0a131a30", "transcripts": "GENCODE v19 (GRCh37), cache built by vep-cache-builder"}},
+            {"id": "fastvep", "label": "fastVEP (Rust, GENCODE v19 cache)", "light": "#1baf7a", "dark": "#199e70",
+             "ver": {"software": "fastVEP 0.2.0 @2beeedb (inodb fork, maf-variant-classification, --pick)", "transcripts": "GENCODE v19 (GRCh37) GFF3"}},
+            {"id": "vep_rs_msk", "label": "vep-rs + MSK isoform overrides (selection demo)", "light": "#8a6d00", "dark": "#e0bb3a",
+             "ver": {"software": "vep-rs 1.0.0 @0a131a30, re-picked by benchmark/annotators/vep_rs_msk.py", "transcripts": "GENCODE v19 (GRCh37); pick from isoform_overrides_at_mskcc_grch37"}},
             {"id": "opencravat", "label": "OpenCRAVAT (hg19→hg38 liftover)", "light": "#e34948", "dark": "#e66767",
              "ver": {"software": "OpenCRAVAT 3.1.1 (gencode mapper)", "transcripts": "GENCODE — hg19 input lifted to hg38 (7 variants unmapped)"}},
         ],
@@ -59,7 +63,7 @@ TRACKS = {
         "tools_dir": ROOT / "data" / "grch38" / "tools",
         "results": ROOT / "results" / "grch38",
         "out": ROOT / "website" / "data" / "grch38",
-        "allt": ROOT / "data" / "grch38" / "tools" / "fastvep" / "all_transcripts.parquet",
+        "allt": ROOT / "data" / "grch38" / "tools" / "vep_rs" / "all_transcripts.parquet",
         "override_file": None,
         "no_override_pick": None,
         "tools": [
@@ -69,14 +73,16 @@ TRACKS = {
              "ver": {"software": "Ensembl VEP 116.0 + vcf2maf", "transcripts": "VEP indexed cache release 116 (GRCh38)"}},
             {"id": "genome_nexus", "label": "Genome Nexus (GRCh38)", "light": "#2a78d6", "dark": "#3987e5",
              "ver": {"software": "Genome Nexus (grch38.genomenexus.org)", "transcripts": "Ensembl GRCh38 + GN overrides"}},
-            {"id": "fastvep_mafsmith", "label": "fastVEP + mafsmith", "light": "#008300", "dark": "#22a022",
-             "ver": {"software": "fastVEP 0.2.0 + mafsmith @e009e98", "transcripts": "Ensembl GRCh38 release 112 (GFF3)"}},
-            {"id": "vibe_vep", "label": "vibe-vep (single Go binary)", "light": "#4a3aa7", "dark": "#9085e9",
-             "ver": {"software": "vibe-vep @c3ca6d8", "transcripts": "GENCODE (GRCh38)"}},
+            {"id": "vibe_vep", "label": "vibe-vep main (single Go binary)", "light": "#4a3aa7", "dark": "#9085e9",
+             "ver": {"software": "vibe-vep @ca01aa1 (main)", "transcripts": "GENCODE v45 (GRCh38)"}},
+            {"id": "vibe_vep_pr17", "label": "vibe-vep PR #17 (full gn replace)", "light": "#7b5bd6", "dark": "#b3a4f0",
+             "ver": {"software": "vibe-vep @48f0b14 (PR #17, full-gn-replace)", "transcripts": "GENCODE v45 (GRCh38)"}},
+            {"id": "vep_rs", "label": "vep-rs (Rust, GENCODE v45 cache)", "light": "#b8860b", "dark": "#d4a017",
+             "ver": {"software": "vep-rs 1.0.0 @0a131a30", "transcripts": "GENCODE v45 (GRCh38), cache built by vep-cache-builder"}},
+            {"id": "fastvep", "label": "fastVEP (Rust, GENCODE v45 cache)", "light": "#1baf7a", "dark": "#199e70",
+             "ver": {"software": "fastVEP 0.2.0 @2beeedb (inodb fork, maf-variant-classification, --pick)", "transcripts": "GENCODE v45 (GRCh38) GFF3"}},
             {"id": "opencravat", "label": "OpenCRAVAT", "light": "#e34948", "dark": "#e66767",
              "ver": {"software": "OpenCRAVAT 3.1.1 (gencode mapper)", "transcripts": "GENCODE (GRCh38, native)"}},
-            {"id": "fastvep", "label": "fastVEP (--pick)", "light": "#1baf7a", "dark": "#199e70",
-             "ver": {"software": "fastVEP 0.2.0 (--pick)", "transcripts": "Ensembl GRCh38 release 112 (GFF3)"}},
         ],
     },
     "grch37_50k": {
@@ -87,7 +93,7 @@ TRACKS = {
         "tools_dir": ROOT / "data" / "50k" / "tools",
         "results": ROOT / "results" / "50k",
         "out": ROOT / "website" / "data" / "grch37_50k",
-        "allt": ROOT / "data" / "50k" / "tools" / "fastvep" / "all_transcripts.parquet",
+        "allt": ROOT / "data" / "50k" / "tools" / "vep_rs" / "all_transcripts.parquet",
         "override_file": ROOT / "data" / "msk_overrides" / "isoform_overrides_at_mskcc_grch37.txt",
         "no_override_pick": None,
         "tools": [
@@ -95,12 +101,16 @@ TRACKS = {
              "ver": {"software": "Genome Nexus (MSK production, 2026)", "transcripts": "Ensembl GRCh37 + MSK isoform overrides"}},
             {"id": "vep_vcf2maf", "label": "Ensembl VEP 116 + vcf2maf (reference)", "light": "#eb6834", "dark": "#d95926",
              "ver": {"software": "Ensembl VEP 116.0 + vcf2maf @589406f", "transcripts": "VEP indexed cache release 116 (GRCh37 gene set)"}},
-            {"id": "fastvep_mafsmith", "label": "fastVEP + mafsmith (+ MSK isoforms)", "light": "#008300", "dark": "#22a022",
-             "ver": {"software": "fastVEP 0.2.0 @d0cd1f7 + mafsmith", "transcripts": "Ensembl GRCh37 release 87 (GFF3)"}},
-            {"id": "vibe_vep", "label": "vibe-vep (single Go binary)", "light": "#4a3aa7", "dark": "#9085e9",
-             "ver": {"software": "vibe-vep @c3ca6d8", "transcripts": "GENCODE v19 (GRCh37)"}},
-            {"id": "fastvep", "label": "fastVEP (--pick, no override option)", "light": "#1baf7a", "dark": "#199e70",
-             "ver": {"software": "fastVEP 0.2.0 @d0cd1f7 (--pick)", "transcripts": "Ensembl GRCh37 release 87 (GFF3)"}},
+            {"id": "vibe_vep", "label": "vibe-vep main (single Go binary)", "light": "#4a3aa7", "dark": "#9085e9",
+             "ver": {"software": "vibe-vep @ca01aa1 (main)", "transcripts": "GENCODE v19 (GRCh37)"}},
+            {"id": "vibe_vep_pr17", "label": "vibe-vep PR #17 (full gn replace)", "light": "#7b5bd6", "dark": "#b3a4f0",
+             "ver": {"software": "vibe-vep @48f0b14 (PR #17, full-gn-replace)", "transcripts": "GENCODE v19 (GRCh37)"}},
+            {"id": "vep_rs", "label": "vep-rs (Rust, GENCODE v19 cache)", "light": "#b8860b", "dark": "#d4a017",
+             "ver": {"software": "vep-rs 1.0.0 @0a131a30", "transcripts": "GENCODE v19 (GRCh37), cache built by vep-cache-builder"}},
+            {"id": "fastvep", "label": "fastVEP (Rust, GENCODE v19 cache)", "light": "#1baf7a", "dark": "#199e70",
+             "ver": {"software": "fastVEP 0.2.0 @2beeedb (inodb fork, maf-variant-classification, --pick)", "transcripts": "GENCODE v19 (GRCh37) GFF3"}},
+            {"id": "vep_rs_msk", "label": "vep-rs + MSK isoform overrides (selection demo)", "light": "#8a6d00", "dark": "#e0bb3a",
+             "ver": {"software": "vep-rs 1.0.0 @0a131a30, re-picked by benchmark/annotators/vep_rs_msk.py", "transcripts": "GENCODE v19 (GRCh37); pick from isoform_overrides_at_mskcc_grch37"}},
         ],
     },
 }
@@ -117,8 +127,11 @@ def norm(s: pd.Series) -> pd.Series:
 
 
 def load_tool(tid: str) -> pd.DataFrame:
-    a = pd.read_parquet(TOOLS_DIR / tid / "annotations.parquet")
+    a = with_optional(pd.read_parquet(TOOLS_DIR / tid / "annotations.parquet"))
     a["tx"] = a["transcript_id"].map(strip_transcript_version)
+    # The Ensembl subversion as the tool wrote it, so the report can show which
+    # transcript build an annotation came from; matching stays on bare ids.
+    a["txv"] = a["transcript_id_versioned"]
     return a
 
 
@@ -150,9 +163,12 @@ def build(track: str) -> None:
     df = base.copy()
     for t in tools:
         tid = t["id"]
-        a = load_tool(tid)[["var_key", "tx", "hgvsp_short", "variant_classification"]].rename(
+        a = load_tool(tid)[
+            ["var_key", "tx", "txv", "hgvsp_short", "variant_classification"]
+        ].rename(
             columns={
                 "tx": f"{tid}__tx",
+                "txv": f"{tid}__txv",
                 "hgvsp_short": f"{tid}__hgvsp",
                 "variant_classification": f"{tid}__class",
             }
@@ -350,8 +366,9 @@ def build(track: str) -> None:
     # from truth + each tool's pick below).
     allt_by_var: dict = {}
     if ALLT and ALLT.exists():
-        allt = pd.read_parquet(ALLT)
+        allt = with_optional(pd.read_parquet(ALLT))
         allt["tx"] = allt["transcript_id"].map(strip_transcript_version)
+        allt["txv"] = allt["transcript_id_versioned"]
         allt_by_var = {
             vk: g for vk, g in allt[allt["var_key"].isin(set(disc["var_key"]))].groupby("var_key")
         }
@@ -377,6 +394,7 @@ def build(track: str) -> None:
                 getattr(r, f"{tid}__class") or "",
                 int(bool(getattr(r, f"{tid}__tx_match"))),
                 int(bool(getattr(r, f"{tid}__hgvsp_match"))),
+                getattr(r, f"{tid}__txv", "") or "",
             ]
             for tid in tool_ids
         ]
@@ -401,6 +419,7 @@ def build(track: str) -> None:
                 tx_rows.append(
                     {
                         "tx": tr.tx,
+                        "txv": getattr(tr, "txv", "") or "",
                         "g": tr.hugo_symbol or "",
                         "hp": tr.hgvsp_short or "",
                         "cl": tr.variant_classification or "",

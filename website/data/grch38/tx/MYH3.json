@@ -1,0 +1,1 @@
+{"17:10639422:10639422:A:-": [{"tx": "ENST00000583535", "txv": "ENST00000583535.6", "g": "MYH3", "hp": "p.L993*", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

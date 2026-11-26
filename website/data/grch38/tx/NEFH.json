@@ -1,0 +1,1 @@
+{"22:29490477:29490479:AGA:-": [{"tx": "ENST00000310624", "txv": "ENST00000310624.7", "g": "NEFH", "hp": "p.K948del", "cl": "In_Frame_Del", "csq": "inframe_deletion", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

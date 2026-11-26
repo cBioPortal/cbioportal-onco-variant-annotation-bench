@@ -1,0 +1,1 @@
+{"1:229486529:229486529:C:A": [{"tx": "ENST00000261396", "txv": "ENST00000261396.6", "g": "NUP133", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

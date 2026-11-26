@@ -11,7 +11,7 @@ versions have appeared, we need a way to gauge how well they perform relative to
 pipeline — that's what this benchmark is for.
 
 A **preliminary, reproducible benchmark** of variant annotation / effect tools —
-Genome Nexus, Ensembl VEP (+ vcf2maf), fastVEP (+ mafsmith), vibe-vep, and
+Genome Nexus, Ensembl VEP (+ vcf2maf), fastVEP (+ mafsmith), vibe-vep, vep-rs, and
 OpenCRAVAT — scored against **published** cancer reference datasets.
 
 **▶ Live interactive report: https://cbioportal.github.io/cbioportal-onco-variant-annotation-bench/**
@@ -19,6 +19,31 @@ OpenCRAVAT — scored against **published** cancer reference datasets.
 There is no absolute ground truth for variant effect, so tools are scored against
 the *published* annotation of each dataset (hence "Datahub" / "GDC", not "truth").
 The report makes that explicit and lets you compare any two tools directly.
+
+## Which tools this run covers
+
+The committed report is a **re-run from regenerated inputs**, not a continuation of
+an earlier one. Every tool in it was run against the same freshly built truth sets,
+on one pinned transcript model (GENCODE v19 for GRCh37, v45 for GRCh38), so the
+Stage 1 figures compare engines rather than transcript-database vintage --
+`benchmark/compare_versions.py` reports 0 subversion disagreements across every
+pair of tools.
+
+**Ensembl VEP (111/116) + vcf2maf, fastVEP + mafsmith, and OpenCRAVAT are not in
+this run.** Their inputs were not regenerated (the VEP caches alone exceed the disk
+available on the machine this was rebuilt on), so `build_site_data.py` drops them
+rather than carry forward numbers scored against a different truth snapshot.
+Earlier published figures for them are in the git history.
+
+Two rows need reading with care:
+
+- **fastVEP is 0.2.0**, from the `maf-variant-classification` branch of a fork,
+  chosen because it emits MAF `Variant_Classification`. Upstream fastVEP is well
+  ahead of that version, so this row is not a fair reading of current fastVEP.
+- **vep-rs + MSK isoform overrides** is not a released tool. It is vep-rs's own
+  per-transcript output re-picked by `benchmark/annotators/vep_rs_msk.py` against
+  the MSK override list -- a demonstration that the selection policy, not the
+  engine, accounts for vep-rs's Stage 2 gap.
 
 ## Datasets (tracks)
 
@@ -61,11 +86,50 @@ each tool has a parser that maps its output to a normalized schema (`benchmark/c
 
 ```
 benchmark/extract_input.py         # dataset MAF -> truth + input (unique variants)
+benchmark/maf_to_vcf.py            # -> VCF for VCF-based tools (VEP, vep-rs)
+benchmark/input_to_maf.py          # -> minimal MAF for MAF-based tools (vibe-vep)
 benchmark/annotators/*.py          # run/parse each tool -> normalized annotations
+benchmark/so_to_maf.py             # SO consequence -> MAF class (vcf2maf rules)
 benchmark/compare_transcripts.py   # Stage 1 (annotation)
 benchmark/compare_pick.py          # Stage 2 (selection)
+benchmark/leaderboard.py           # both stages as one table (--results-dir per track)
 benchmark/build_site_data.py       # -> website/data/<track>/*.json (the report)
 ```
+
+### Transcript subversions
+
+The reference MAFs carry bare transcript ids (`ENST00000288602`, no `.6`), so
+matching is version-insensitive and no tool can be *scored* on its subversion.
+Parsers still keep the tool's own versioned id in `transcript_id_versioned`;
+`benchmark/compare_versions.py` reports, per pair of tools, how often they
+disagree on the subversion of a shared transcript. A non-zero rate means the two
+are on different transcript models, so a Stage 1 difference between them is a
+database-vintage effect rather than an engine one. The report shows the
+subversion wherever a tool's picked transcript is displayed.
+
+```
+benchmark/compare_versions.py --tools-dir data/tools --results-dir results
+```
+
+### vep-rs
+
+[vep-rs](https://github.com/natera-open-source/vep-rs) is a Rust reimplementation of
+Ensembl VEP. It annotates from a JSON transcript cache, which `vep-cache-builder`
+builds from a GTF and a genome FASTA — so it can be pinned to the *same* GENCODE
+release vibe-vep uses, which makes the two a comparison of engines rather than of
+transcript-database vintage:
+
+```
+vep-cache-builder --species homo_sapiens --assembly GRCh37 --release 116 \
+  --gtf gencode.v19.gtf.gz --genome-fasta GRCh37.fa --output-dir <cache>
+vep --json_cache <cache> --assembly GRCh37 --offline --fasta GRCh37.fa \
+  --vcf --symbol --hgvs --numbers --canonical --flag_pick_allele \
+  -i input.vcf -o output.vep.vcf
+benchmark/annotators/vep_rs.py --vep-vcf output.vep.vcf --outdir <tool dir>
+```
+
+One run yields both stages: `--flag_pick_allele` keeps every overlapping transcript
+(Stage 1) and flags one as the pick (Stage 2).
 
 Adding a tool = one parser to the normalized schema, then re-run `build_site_data.py`.
 

@@ -1,0 +1,1 @@
+{"X:27979844:27979845:CG:-": [{"tx": "ENST00000441525", "txv": "ENST00000441525.4", "g": "DCAF8L1", "hp": "p.A497Dfs*16", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

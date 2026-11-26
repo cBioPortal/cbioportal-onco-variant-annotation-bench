@@ -1,0 +1,1 @@
+{"20:56533397:56533405:CCTTTATGT:-": [{"tx": "ENST00000371325", "txv": "ENST00000371325.1", "g": "FAM209B", "hp": "p.A19_F22delinsV", "cl": "In_Frame_Del", "csq": "inframe_deletion", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

@@ -18,7 +18,12 @@ from urllib.parse import unquote
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from common import STD_FIELDS, strip_transcript_version, var_key  # noqa: E402
+from common import (  # noqa: E402
+    STD_FIELDS,
+    STD_FIELDS_OPTIONAL,
+    strip_transcript_version,
+    var_key,
+)
 
 ROOT = Path(__file__).resolve().parent.parent.parent
 DIR = ROOT / "data" / "tools" / "vibe_vep"
@@ -44,6 +49,7 @@ def build(maf_path: str) -> pd.DataFrame:
             "var_key": key,
             "hugo_symbol": maf.get("Hugo_Symbol", ""),
             "transcript_id": maf.get("Transcript_ID", "").map(strip_transcript_version),
+            "transcript_id_versioned": maf.get("Transcript_ID", ""),
             "consequence": maf.get("Consequence", ""),
             "variant_classification": maf.get("Variant_Classification", ""),
             "hgvsc": maf.get("HGVSc", ""),
@@ -54,7 +60,7 @@ def build(maf_path: str) -> pd.DataFrame:
         }
     )
     return out.drop_duplicates(subset="var_key", keep="first").reset_index(drop=True)[
-        STD_FIELDS
+        STD_FIELDS + STD_FIELDS_OPTIONAL
     ]
 
 

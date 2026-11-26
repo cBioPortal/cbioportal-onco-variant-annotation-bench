@@ -42,6 +42,20 @@ STD_FIELDS = [
     "codons",
 ]
 
+# Columns a parser emits when its tool reports them. They are not part of the
+# scored schema, so an older parser that omits one still loads; `with_optional`
+# fills what is missing.
+#
+# `transcript_id_versioned` keeps the tool's transcript id as written, with its
+# Ensembl subversion (ENST00000288602.6). Matching stays version-insensitive
+# because the MAF truth sets carry no versions at all, but two tools built on
+# different Ensembl releases can annotate the *same* ENST differently when its
+# subversion differs, so the version is kept to tell that apart from a genuine
+# disagreement between engines. `compare_versions.py` reports it.
+STD_FIELDS_OPTIONAL = [
+    "transcript_id_versioned",
+]
+
 
 def var_key(chrom, start, end, ref, alt) -> str:
     """Stable identifier for a genomic variant, shared across truth and tools."""
@@ -60,6 +74,21 @@ def load_maf(path: str, nrows: int | None = None) -> pd.DataFrame:
         na_filter=False,
         low_memory=False,
     )
+
+
+def with_optional(df: "pd.DataFrame") -> "pd.DataFrame":
+    """Add any missing optional column as an empty string column."""
+    for col in STD_FIELDS_OPTIONAL:
+        if col not in df.columns:
+            df[col] = ""
+    return df
+
+
+def transcript_version(tid: str) -> str:
+    """ENST00000288602.6 -> '6'; '' when the id carries no version."""
+    if not tid or "." not in tid:
+        return ""
+    return tid.split(".", 1)[1]
 
 
 def strip_transcript_version(tid: str) -> str:

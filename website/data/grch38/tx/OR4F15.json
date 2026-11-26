@@ -1,0 +1,1 @@
+{"15:101818449:101818450:AG:T": [{"tx": "ENST00000332238", "txv": "ENST00000332238.5", "g": "OR4F15", "hp": "p.K88Ifs*29", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

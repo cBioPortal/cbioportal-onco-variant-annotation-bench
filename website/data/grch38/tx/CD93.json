@@ -1,0 +1,1 @@
+{"20:23084342:23084344:CTT:-": [{"tx": "ENST00000246006", "txv": "ENST00000246006.5", "g": "CD93", "hp": "p.K617del", "cl": "In_Frame_Del", "csq": "inframe_deletion", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

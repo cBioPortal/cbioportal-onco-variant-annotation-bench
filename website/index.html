@@ -366,7 +366,7 @@ function renderOverview(){
   const s1names = [...s.stage1].sort((a,b)=>s1order(a.tool)-s1order(b.tool)).map(m=>s1lbl(m.tool));
   const s1list = s1names.length>1 ? s1names.slice(0,-1).join(", ")+" and "+s1names.slice(-1) : (s1names[0]||"");
   h += `</tbody></table></div>
-    <p class="small muted" style="margin-top:8px">Only annotators that emit <b>every</b> overlapping transcript appear here — ${esc(s1list)} — each parsed from its full per-transcript output before it is collapsed to a single pick. fastVEP+mafsmith reuses fastVEP's annotator, so its Stage&nbsp;1 is fastVEP's row. vibe-vep emits only its single picked transcript (in the MAF), so it appears in Stage&nbsp;2 only. <b>The takeaway:</b> every annotator gets ${REF()}'s own transcript ~98% of the time and reports the identical protein change ~98–99% on it — so the Stage&nbsp;2 spread below is almost entirely transcript <em>selection</em>, not annotation error.</p></div>`;
+    <p class="small muted" style="margin-top:8px">Only annotators that emit <b>every</b> overlapping transcript appear here — ${esc(s1list)} — each parsed from its full per-transcript output before it is collapsed to a single pick. vibe-vep's row is read from the <code>all_effects</code> MAF column, which carries the short protein form only, so its protein figure is the short form; vep-rs's is parsed from the per-transcript CSQ of a <code>--flag_pick_allele</code> run. <b>The takeaway:</b> every annotator gets ${REF()}'s own transcript ~98% of the time and reports the identical protein change ~98–99% on it — so the Stage&nbsp;2 spread below is almost entirely transcript <em>selection</em>, not annotation error.</p></div>`;
 
   // Stage 2 table
   h += `<div class="card"><h2>Stage 2 — Selection (pick + effect)</h2>
@@ -522,7 +522,7 @@ async function renderBrowser(){
         + v.pk.map((pk,ci) => {
           const okTx = pk[3], okHp = pk[4];
           const mark = okHp ? '<span class="ok">●</span>' : '<span class="bad">▲</span>';
-          return `<td class="mono small">${mark} ${esc(pk[1]||'·')}${okTx?'':`<br><span class="muted bad" style="font-size:10px">${esc(pk[0]||'—')}</span>`}</td>`;
+          return `<td class="mono small">${mark} ${esc(pk[1]||'·')}${okTx?'':`<br><span class="muted bad" style="font-size:10px">${esc(pk[5]||pk[0]||'—')}</span>`}</td>`;
         }).join("") + `</tr>`;
     }).join("") || `<tr><td colspan="${ti.length+4}" class="muted">No variants match.</td></tr>`;
     $("#b-pageinfo").textContent = rows.length? `Page ${browser.page+1} / ${Math.ceil(rows.length/browser.pageSize)}` : "";
@@ -565,7 +565,7 @@ async function drill(v){
     const pills = (r.by||[]).map(id=>`<span class="pill" style="background:${toolColor(id)}">${esc(shortLabel(state.summary.tools.find(t=>t.id===id)))}</span>`).join("")
       + (r.t?`<span class="pill" style="background:var(--good)">${REF()}</span>`:"");
     const matchTruth = r.hp === v.th;
-    h += `<tr class="${r.t?'tx-truth':''}"><td class="mono ${r.by.length||r.t?'tx-pick':''}">${esc(r.tx)}</td>
+    h += `<tr class="${r.t?'tx-truth':''}"><td class="mono ${r.by.length||r.t?'tx-pick':''}">${esc(r.txv||r.tx)}</td>
       <td>${esc(r.g)}</td>
       <td class="mono ${!matchTruth&&(r.by.length)?'bad':''}">${esc(r.hp||'·')}</td>
       <td class="small">${esc(r.cl)}</td><td class="small muted">${esc(r.csq)}</td>
@@ -655,7 +655,7 @@ async function renderCompare(){
     $("#cmp-count").textContent = `${rows.length.toLocaleString()} variants where they differ on transcript or protein (showing first 300)`;
     $("#cmp-body").innerHTML = rows.slice(0,300).map(v => {
       const x=v.pk[ai], y=v.pk[bi];
-      const cell = pk => `<span class="mono">${esc(pk[1]||'·')}</span><br><span class="muted" style="font-size:10px">${esc(pk[0]||'—')}</span>`;
+      const cell = pk => `<span class="mono">${esc(pk[1]||'·')}</span><br><span class="muted" style="font-size:10px">${esc(pk[5]||pk[0]||'—')}</span>`;
       const diff = (x[1]||"")!==(y[1]||"");
       return `<tr><td><b>${esc(v.g)}</b></td><td class="mono small">${esc(v.c)}:${v.p.toLocaleString()}</td>
         <td class="small">${esc(v.cl)}</td>
@@ -771,7 +771,7 @@ function llmBenchmarkPrompt(){
   out += `- variants${fsuf()}.json (every discrepant variant, each tool's picked transcript + effect): ${abs("variants"+fsuf()+".json")}\n`;
   if(TRACKS[TRACK].hasIsoforms) out += `- transcript_reference.json (per-gene canonical transcript from MANE/Ensembl/UniProt/MSKCC): ${abs("transcript_reference.json")}\n`;
   out += `- per-gene transcript drill-down (all tools' picks for a gene's variants): ${abs("tx/")}<GENE>.json  (e.g. ${abs("tx/TP53.json")})\n`;
-  out += `To compare tools directly (no reference), load variants.json: two tools that pick differently can't both match the reference, so every A-vs-B disagreement is in that file (field pk[toolIndex] = [transcript, hgvsp, class, tx_ok, hgvsp_ok]).\n`;
+  out += `To compare tools directly (no reference), load variants.json: two tools that pick differently can't both match the reference, so every A-vs-B disagreement is in that file (field pk[toolIndex] = [transcript, hgvsp, class, tx_ok, hgvsp_ok, transcript_with_version]).\n`;
   out += `\nNow answer my question about this benchmark — cite the summary numbers above, and fetch the files when you need per-gene or per-variant detail.`;
   return out;
 }
@@ -784,9 +784,11 @@ async function copyText(text, msgEl){
 async function discrepanciesCSV(){
   await ensureVariants(); const V = state.variants; const ti = V.tool_ids;
   const cols = ["var_key","gene","class","truth_transcript","truth_hgvsp"];
-  ti.forEach(id => { cols.push(id+"_transcript", id+"_hgvsp"); });
+  // The reference MAFs carry bare transcript ids, so only the tools have a
+  // subversion column; it says which Ensembl transcript build each pick is on.
+  ti.forEach(id => { cols.push(id+"_transcript", id+"_transcript_versioned", id+"_hgvsp"); });
   const rows = V.variants.map(v => { const r = {var_key:v.vk, gene:v.g, class:v.cl, truth_transcript:v.tt, truth_hgvsp:v.th};
-    ti.forEach((id,i)=>{ r[id+"_transcript"]=v.pk[i]?.[0]||""; r[id+"_hgvsp"]=v.pk[i]?.[1]||""; }); return r; });
+    ti.forEach((id,i)=>{ r[id+"_transcript"]=v.pk[i]?.[0]||""; r[id+"_transcript_versioned"]=v.pk[i]?.[5]||""; r[id+"_hgvsp"]=v.pk[i]?.[1]||""; }); return r; });
   return toCSV(rows, cols);
 }
 function renderDownloads(){

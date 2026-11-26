@@ -1,0 +1,1 @@
+{"4:103656340:103656341:GG:-": [{"tx": "ENST00000304883", "txv": "ENST00000304883.3", "g": "TACR3", "hp": "p.Y247*", "cl": "Nonsense_Mutation", "csq": "stop_gained&frameshift_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

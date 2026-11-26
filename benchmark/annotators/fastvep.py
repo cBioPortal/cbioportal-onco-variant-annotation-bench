@@ -23,6 +23,7 @@ import pandas as pd
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from common import (  # noqa: E402
     STD_FIELDS,
+    STD_FIELDS_OPTIONAL,
     hgvsp_to_short,
     strip_protein_prefix,
     strip_transcript_version,
@@ -46,6 +47,7 @@ def tc_to_std(var_key: str, tc: dict) -> dict:
         "var_key": var_key,
         "hugo_symbol": tc.get("gene_symbol", "") or "",
         "transcript_id": strip_transcript_version(tc.get("transcript_id", "") or ""),
+        "transcript_id_versioned": tc.get("transcript_id", "") or "",
         "consequence": ",".join(tc.get("consequence_terms", []) or []),
         "variant_classification": tc.get("variant_classification", "") or "",
         "hgvsc": strip_protein_prefix(tc.get("hgvsc", "") or ""),
@@ -79,12 +81,12 @@ def build_pick(pick_json: Path) -> pd.DataFrame:
             # keeping the most-severe consequence for the consequence metric.
             rows.append(
                 {
-                    **{f: "" for f in STD_FIELDS},
+                    **{f: "" for f in STD_FIELDS + STD_FIELDS_OPTIONAL},
                     "var_key": key,
                     "consequence": r.get("most_severe_consequence", "") or "",
                 }
             )
-    return pd.DataFrame(rows)[STD_FIELDS]
+    return pd.DataFrame(rows)[STD_FIELDS + STD_FIELDS_OPTIONAL]
 
 
 def build_all(all_json: Path) -> pd.DataFrame:
@@ -93,7 +95,7 @@ def build_all(all_json: Path) -> pd.DataFrame:
         key = r.get("id", "")
         for tc in r.get("transcript_consequences") or []:
             rows.append(tc_to_std(key, tc))
-    return pd.DataFrame(rows)[STD_FIELDS]
+    return pd.DataFrame(rows)[STD_FIELDS + STD_FIELDS_OPTIONAL]
 
 
 def main() -> None:

@@ -1,1 +1,1 @@
-{"1:229636030:229636031:-:T": [{"tx": "ENST00000258243", "g": "URB2", "hp": "p.L474Ffs*10", "cl": "Frame_Shift_Ins", "csq": "frameshift_variant", "by": ["vep_vcf2maf", "genome_nexus", "fastvep_mafsmith", "vibe_vep", "opencravat", "fastvep"], "t": 1}]}
+{"1:229643532:229643532:G:T": [{"tx": "ENST00000258243", "txv": "ENST00000258243.7", "g": "URB2", "hp": "", "cl": "Splice_Site", "csq": "splice_acceptor_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

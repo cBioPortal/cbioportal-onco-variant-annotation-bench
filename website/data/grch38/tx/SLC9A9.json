@@ -1,0 +1,1 @@
+{"3:143363490:143363494:TCAAA:-": [{"tx": "ENST00000316549", "txv": "ENST00000316549.11", "g": "SLC9A9", "hp": "p.F532Pfs*21", "cl": "Frame_Shift_Del", "csq": "frameshift_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

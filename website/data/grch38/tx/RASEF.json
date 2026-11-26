@@ -1,0 +1,1 @@
+{"9:83004500:83004500:G:A": [{"tx": "ENST00000376447", "txv": "ENST00000376447.4", "g": "RASEF", "hp": "p.D400=", "cl": "Splice_Region", "csq": "splice_region_variant&synonymous_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}

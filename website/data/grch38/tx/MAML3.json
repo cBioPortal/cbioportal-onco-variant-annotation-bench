@@ -1,0 +1,1 @@
+{"4:139889263:139889263:C:A": [{"tx": "ENST00000502696", "txv": "ENST00000502696.1", "g": "MAML3", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": [], "t": 0}, {"tx": "ENST00000509479", "txv": "ENST00000509479.6", "g": "MAML3", "hp": "", "cl": "Intron", "csq": "intron_variant", "by": ["genome_nexus", "vibe_vep", "vibe_vep_pr17", "vep_rs", "fastvep"], "t": 1}]}
