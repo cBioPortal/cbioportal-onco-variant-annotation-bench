@@ -78,6 +78,8 @@ class, consequence, gene) and broken down by variant class, by gene, and by
 - **2017 → 50K** — how the *same* published source re-annotated between releases
 - **Download / LLM** — CSV exports, raw JSON links, a copy-paste LLM prompt, and
   in-page [WebMCP](https://github.com/webmachinelearning/webmcp) tools
+- **Speed & memory** (GRCh37 track) — wall time, CPU time and peak RSS per tool,
+  measured separately from accuracy; see below
 
 ## Reproduce
 
@@ -95,6 +97,44 @@ benchmark/compare_pick.py          # Stage 2 (selection)
 benchmark/leaderboard.py           # both stages as one table (--results-dir per track)
 benchmark/build_site_data.py       # -> website/data/<track>/*.json (the report)
 ```
+
+### Speed & memory
+
+Timings are a **separate measurement from the leaderboard** and do not feed into
+any concordance number. `benchmark/run_perf.sh` re-runs each locally-installed
+tool (point `BENCH_DATA_DIR` at the directory holding `refs/`, `bin/`,
+`vep_rs_cache/` and the per-track inputs) and `benchmark/build_perf_data.py`
+reduces the raw TSV to `website/data/<track>/perf.json`.
+
+Method, and its limits:
+
+- Each tool is timed twice per repetition — on a 10-variant input (**startup**:
+  process launch plus transcript-index load) and on the full track input.
+  Annotation cost is the difference, so a tool is credited for the work it does
+  rather than for how its index happens to load.
+- The two vibe-vep builds are given separate `HOME`s. They share one
+  `~/.vibe-vep` transcript cache and each invalidates the other's, so whichever
+  ran second was being charged a 12 s rebuild that has nothing to do with it.
+  Each tool also gets a discarded warm-up run before its repetitions.
+- All tools are pinned to the same two cores (`taskset`) at the same degree of
+  parallelism (`--fork 2` / `GOMAXPROCS=2`), run one at a time, under a 4 GB
+  `systemd-run` scope. Median of three runs.
+- Every run is a **cold process against a warm OS page cache**. Dropping the page
+  cache needs root, so true cold-disk numbers are not claimed.
+- **Genome Nexus is excluded.** It is a remote production API; timing it would
+  measure the network and someone else's server.
+- **vep-rs and fastVEP are each run in both modes** — every overlapping
+  transcript, and `--pick` — and the report groups the rows by mode, because a
+  tool emitting one consequence per variant is not doing the same work as one
+  emitting all ~7.25.
+- **vep-rs loads its cache lazily, per chromosome**, so its startup column is
+  small and most of its index cost falls in the annotate column. The other tools
+  load a whole transcript index up front.
+- vibe-vep is listed three times: `main` and PR #17 with extra annotations off,
+  which is the configuration this benchmark scores, and `main` in its default
+  configuration, which also attaches SIFT/PolyPhen/ClinVar/AlphaMissense/gnomAD/
+  dbSNP/hotspots. Core annotations are identical between them, so the gap is the
+  cost of the extras.
 
 ### Transcript subversions
 
