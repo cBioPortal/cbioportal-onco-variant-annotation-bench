@@ -115,13 +115,15 @@ Method, and its limits:
   (**full**). The index point carries the same genomic footprint as the full
   input, so `full - index` is per-variant work and nothing else.
 - **A ten-variant input is not enough to separate these.** A tool that loads its
-  transcript index lazily by region pays nothing for regions nobody asks about,
-  so ten variants understate its index cost by an order of magnitude and that
-  cost then lands silently in its per-variant rate. vep-rs does exactly this: it
-  reads a 1.1 GB JSON cache in 1 Mb windows, costs ~11 s of CPU to cover this
-  panel's footprint, and is then *cheaper* per variant than vibe-vep. An earlier
-  version of this page charged that index cost to its annotation rate and
-  reported it as 2.4x slower per variant, which was wrong.
+  transcript index lazily pays nothing for the parts of the genome nobody asks
+  about, so ten variants understate its index cost by an order of magnitude and
+  that cost then lands silently in its per-variant rate. vep-rs does exactly
+  this: it loads its 1.1 GB JSON cache one chromosome at a time, and a chromosome
+  arrives whole the first time any variant lands on it. One variant on chr1
+  costs 0.9 s of CPU and 255 MB of RSS; covering this panel costs ~11 s of CPU,
+  after which vep-rs is *cheaper* per variant than vibe-vep. An earlier version
+  of this page charged that index cost to its annotation rate and reported it as
+  2.4x slower per variant, which was wrong.
 - The two vibe-vep builds are given separate `HOME`s. They share one
   `~/.vibe-vep` transcript cache and each invalidates the other's, so whichever
   ran second was being charged a 12 s rebuild that has nothing to do with it.

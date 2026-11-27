@@ -8,8 +8,9 @@ Each tool is timed at three input sizes:
   full    the whole track input -- index cost plus per-variant work
 
 Subtracting `index` from `full` leaves per-variant work alone, which matters
-because a tool that loads its transcript index lazily by region pays nothing
-for regions it is not asked about. Timing such a tool on a handful of variants
+because a tool that loads its transcript index lazily -- vep-rs one whole
+chromosome at a time -- pays nothing for the parts of the genome it is not
+asked about. Timing such a tool on a handful of variants
 understates its index cost by an order of magnitude, and that cost then lands
 silently in its per-variant figure.
 

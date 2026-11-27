@@ -9,7 +9,8 @@
 #   full    the whole track input                - index cost + per-variant work
 #
 # A ten-variant input is NOT enough to separate these. A tool that loads its
-# transcript index lazily by region only pays for the regions it is asked about,
+# transcript index lazily only pays for the parts of the genome it is asked
+# about (vep-rs loads one whole chromosome at a time),
 # so ten variants understate its index cost by an order of magnitude and that
 # cost then silently lands in its per-variant figure. The `index` point carries
 # the same genomic footprint as the full input, so (full - index) is per-variant

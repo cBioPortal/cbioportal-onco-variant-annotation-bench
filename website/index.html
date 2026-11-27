@@ -1019,7 +1019,8 @@ async function renderPerf(){
     <b>${p.n_index_variants.toLocaleString()} variants — one per 1 Mb window the full input touches</b>, which forces the
     whole index without doing much annotation (<b>index</b>), and on all ${n.toLocaleString()} (<b>full</b>). Subtracting
     <em>index</em> from <em>full</em> leaves per-variant work and nothing else.
-    <br><br>This matters because a tool that loads its index lazily by region pays nothing for regions nobody asks about.
+    <br><br>This matters because a tool that loads its index lazily pays nothing for the parts of the genome nobody asks
+    about. vep-rs loads one whole chromosome at a time, so a single variant on chr1 already costs it 0.9&thinsp;s of CPU.
     Timed on ten variants it looks instantaneous to start, and its real index cost is then charged to its per-variant rate —
     which is exactly the mistake an earlier version of this page made.</p></div>`;
 
