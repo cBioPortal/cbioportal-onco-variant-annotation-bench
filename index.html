@@ -164,6 +164,7 @@ code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px;
   <button data-view="genes">By gene</button>
   <button data-view="browser">Discrepancy browser</button>
   <button data-view="compare">Compare tools</button>
+  <button data-view="perf">Speed &amp; memory</button>
   <button data-view="datahubdiff">2017 → 50K</button>
   <button data-view="overrides">Isoforms</button>
   <button data-view="download">Download / LLM</button>
@@ -175,6 +176,7 @@ code { font-family: var(--mono); background: var(--surface-2); padding: 1px 5px;
   <section id="genes" class="view"></section>
   <section id="browser" class="view"></section>
   <section id="compare" class="view"></section>
+  <section id="perf" class="view"></section>
   <section id="datahubdiff" class="view"></section>
   <section id="overrides" class="view"></section>
   <section id="download" class="view"></section>
@@ -195,7 +197,7 @@ const cssvar = n => getComputedStyle(document.documentElement).getPropertyValue(
 
 // Two benchmark tracks, each with its own data/<track>/ directory.
 const TRACKS = {
-  grch37: {label: "GRCh37 · MSK-IMPACT", hasIsoforms: true, hasDatahubDiff: true,
+  grch37: {label: "GRCh37 · MSK-IMPACT", hasIsoforms: true, hasDatahubDiff: true, hasPerf: true,
     ref: "Datahub", refLong: "cBioPortal Datahub — the published MSK-IMPACT annotation (Genome Nexus)"},
   grch37_50k: {label: "GRCh37 · MSK-IMPACT 50K", hasIsoforms: false,
     ref: "Datahub", refLong: "cBioPortal Datahub — the published MSK-IMPACT 50K annotation (Genome Nexus), a newer & larger release than 2017"},
@@ -769,6 +771,7 @@ function llmBenchmarkPrompt(){
   out += `- by_class${fsuf()}.json (per variant-class × tool): ${abs("by_class"+fsuf()+".json")}\n`;
   out += `- by_gene${fsuf()}.json (every gene × tool, ~${(state.byGene||[]).length} genes): ${abs("by_gene"+fsuf()+".json")}\n`;
   out += `- variants${fsuf()}.json (every discrepant variant, each tool's picked transcript + effect): ${abs("variants"+fsuf()+".json")}\n`;
+  if(TRACKS[TRACK].hasPerf) out += `- perf.json (wall/CPU time + peak RSS per locally-run tool; speed only, not accuracy): ${abs("perf.json")}\n`;
   if(TRACKS[TRACK].hasIsoforms) out += `- transcript_reference.json (per-gene canonical transcript from MANE/Ensembl/UniProt/MSKCC): ${abs("transcript_reference.json")}\n`;
   out += `- per-gene transcript drill-down (all tools' picks for a gene's variants): ${abs("tx/")}<GENE>.json  (e.g. ${abs("tx/TP53.json")})\n`;
   out += `To compare tools directly (no reference), load variants.json: two tools that pick differently can't both match the reference, so every A-vs-B disagreement is in that file (field pk[toolIndex] = [transcript, hgvsp, class, tx_ok, hgvsp_ok, transcript_with_version]).\n`;
@@ -799,6 +802,7 @@ function renderDownloads(){
     ["by_gene"+suf+".json", "Per-gene concordance for every tool (all "+s.n_genes.toLocaleString()+" genes)", "by_gene"+suf+".json"],
     ["variants"+suf+".json", "Every discrepant variant with each tool's picked transcript + effect", "variants"+suf+".json"],
     ["transcript_reference.json", "Per-gene canonical transcript from MANE / Ensembl / UniProt / MSKCC", "transcript_reference.json"],
+    ...(TRACKS[tk].hasPerf ? [["perf.json", "Wall time, CPU time and peak memory for each locally-run tool", "perf.json"]] : []),
   ];
   let h = `<p class="lead">All benchmark results are precomputed JSON — download the machine-readable files directly, or export
     CSV summaries. Files reflect the current track (<b>${esc(TRACKS[tk].label)}</b>)${FILTER&&curFilter()?' and the <b>OncoKB: '+esc(curFilter().label)+'</b> filter':''}.</p>`;
@@ -980,11 +984,125 @@ function renderAbout(){
 
 // ---------- nav ----------
 const RENDERED = {};
+// ---------- speed & memory ----------
+async function renderPerf(){
+  const el = $("#perf");
+  if(!state.perf){
+    el.innerHTML = `<div class="loading">Loading timings…</div>`;
+    try { state.perf = await getJSON(dataURL("perf.json")); }
+    catch(e){ el.innerHTML = `<div class="card"><b>No timings for this track.</b><br><span class="small muted">Speed and memory were measured on the GRCh37 · MSK-IMPACT track only.</span></div>`; return; }
+  }
+  const p = state.perf, rows = p.rows, n = p.n_variants;
+  const num = (x,d) => x==null ? "—" : x.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+  const sec = x => x==null ? "—" : (x<10 ? x.toFixed(2) : x.toFixed(1))+"s";
+  const us  = x => x==null ? "—" : num(x,0)+" µs";
+  // Only rows in the same mode are comparable: "all" computes every overlapping
+  // transcript, "pick" reduces to one consequence per variant. The extra-
+  // annotation row is the same engine doing more, so it is left out of "best".
+  const inMode = m => rows.filter(r => r.mode===m && r.tool!=="vibe_vep_annotated");
+  const minBy = (rs,f) => rs.filter(r=>f(r)!=null).reduce((a,b)=> f(b)<f(a)?b:a, rs.filter(r=>f(r)!=null)[0]);
+  const all = inMode("all");
+  const quickest = minBy(all, r=>r.per_variant_cpu_us);
+  const lightest = minBy(all, r=>r.index_cpu_s);
+  const maxTp = Math.max(...rows.map(r=>r.variants_per_s||0), 1);
+
+  let h = `<p class="lead">How long each tool takes and how much memory it needs — measured separately from accuracy, and
+    <b>not</b> part of the leaderboard. Every tool annotates the same ${n.toLocaleString()} variants, pinned to the same
+    <b>${p.host.cores_used} cores</b> at the same degree of parallelism, as a cold process against a warm OS page cache.
+    Figures are the <b>median of ${p.reps} runs</b>.</p>`;
+
+  h += `<div class="card" style="border-color:var(--accent)"><h2>Two different costs</h2>
+    <p class="small" style="line-height:1.7;max-width:80ch;margin:0">Annotating a file costs a tool <b>a fixed amount to
+    load the transcripts covering the input's genomic footprint</b>, plus <b>a per-variant amount</b>. These behave nothing
+    alike, and a single throughput figure hides which one you are paying.
+    <br><br>Each tool is therefore timed three times: on 10 variants (<b>launch</b>), on
+    <b>${p.n_index_variants.toLocaleString()} variants — one per 1 Mb window the full input touches</b>, which forces the
+    whole index without doing much annotation (<b>index</b>), and on all ${n.toLocaleString()} (<b>full</b>). Subtracting
+    <em>index</em> from <em>full</em> leaves per-variant work and nothing else.
+    <br><br>This matters because a tool that loads its index lazily pays nothing for the parts of the genome nobody asks
+    about. vep-rs loads one whole chromosome at a time, so a single variant on chr1 already costs it 0.9&thinsp;s of CPU.
+    Timed on ten variants it looks instantaneous to start, and its real index cost is then charged to its per-variant rate —
+    which is exactly the mistake an earlier version of this page made.</p></div>`;
+
+  h += `<div class="stat-row" style="margin-top:18px">
+    ${quickest?`<div class="stat"><div class="v" style="color:var(--good)">${us(quickest.per_variant_cpu_us)}</div><div class="k">cheapest per variant<br>${esc(quickest.label)}</div></div>`:''}
+    ${lightest?`<div class="stat"><div class="v" style="color:var(--good)">${sec(lightest.index_cpu_s)}</div><div class="k">cheapest index load<br>${esc(lightest.label)}</div></div>`:''}
+    <div class="stat"><div class="v">${p.host.cores_used} / ${p.host.cores_total}</div><div class="k">cores used<br>of this host's</div></div>
+    <div class="stat"><div class="v">${p.reps}×</div><div class="k">repetitions<br>median reported</div></div>
+  </div>`;
+
+  if(quickest && lightest && quickest.tool!==lightest.tool){
+    const dIdx = quickest.index_cpu_s - lightest.index_cpu_s;
+    const dPer = (lightest.per_variant_cpu_us - quickest.per_variant_cpu_us)/1e6;
+    if(dIdx>0 && dPer>0){
+      const be = dIdx/dPer;
+      h += `<p class="lead small"><b>They cross over.</b> ${esc(lightest.label)} starts ${sec(dIdx)} of CPU ahead but spends
+        ${us(lightest.per_variant_cpu_us - quickest.per_variant_cpu_us)} more on every variant, so ${esc(quickest.label)}
+        overtakes it at about <b>${num(be,0)} variants</b>. This track has ${n.toLocaleString()}, which is well short of that —
+        on a whole-genome or large-cohort input the ranking below would invert.</p>`;
+    }
+  }
+
+  const section = (m, title, note) => {
+    const rs = rows.filter(r => r.mode===m);
+    if(!rs.length) return "";
+    let t = `<h3 style="margin:22px 0 6px">${esc(title)}</h3><p class="small muted" style="margin:0 0 10px;max-width:72ch">${note}</p>`;
+    t += `<div class="card scroll-x"><table><thead><tr>
+      <th>Tool</th><th>Writes</th><th class="num">Launch</th><th class="num">Index</th>
+      <th class="num">Per variant</th><th class="bar-cell">Steady-state rate</th>
+      <th class="num">Total, ${n.toLocaleString()}</th><th class="num">Peak RSS</th>
+      </tr></thead><tbody>`;
+    for(const r of rs){
+      const w = Math.max(2, 100*(r.variants_per_s||0)/maxTp);
+      const dim = r.tool==="vibe_vep_annotated";
+      t += `<tr${dim?' style="opacity:.72"':''}>
+        <td>${esc(r.label)}</td>
+        <td class="small muted">${esc(r.output)}</td>
+        <td class="num mono">${sec(r.launch_wall_s)}</td>
+        <td class="num mono">${sec(r.index_wall_s)}<span class="muted"> / ${sec(r.index_cpu_s)}</span></td>
+        <td class="num mono">${us(r.per_variant_cpu_us)}</td>
+        <td class="bar-cell"><div style="display:flex;align-items:center;gap:8px">
+          <div class="bar-track" style="flex:1;min-width:70px"><div class="bar-fill" style="width:${w.toFixed(1)}%;background:var(--accent)"></div></div>
+          <span class="mono" style="white-space:nowrap">${num(r.variants_per_s,0)}/s</span></div></td>
+        <td class="num mono">${sec(r.full_wall_s)}</td>
+        <td class="num mono">${num(r.maxrss_mb,0)} MB</td>
+      </tr>`;
+    }
+    return t + `</tbody></table></div>`;
+  };
+  const cols = `<span class="small muted">Index and total are wall time; the second index figure and the per-variant
+    figure are CPU (user+sys), which does not reward whichever tool grabbed more threads.</span>`;
+  h += section("all", "Every overlapping transcript",
+    `What this benchmark's Stage 1 scores — ${n.toLocaleString()} variants, ~7.25 transcripts each. ${cols}`);
+  h += section("pick", "One consequence per variant",
+    `The same engines asked for a single pick, so the cost of emitting every transcript is out of the comparison. ${cols}`);
+
+  h += `<div class="card" style="margin-top:18px"><h2>What this does and does not say</h2><ul class="small" style="line-height:1.7;max-width:80ch">
+    <li><b>Genome Nexus is absent on purpose.</b> It is a remote production API, so timing it would measure the network and
+      someone else's server, and load-testing it is not this benchmark's business. Only locally run tools are listed.</li>
+    <li><b>The index column is not a start-up penalty you can amortise away.</b> It is paid per invocation. A service that
+      stays resident pays it once; a batch job over one file pays it once; a per-sample pipeline pays it every time.</li>
+    <li><b>vibe-vep appears three times.</b> Two builds — <code>main</code> and PR #17 — with extra annotations switched off,
+      which is the configuration this benchmark scores; and the dimmed row, <code>main</code> in its default configuration,
+      which also attaches SIFT, PolyPhen, ClinVar, AlphaMissense, gnomAD, dbSNP and hotspot columns. Core annotations are
+      identical between them, so the gap is purely the cost of the extras.</li>
+    <li><b>The two vibe-vep builds share one on-disk transcript cache and invalidate each other's.</b> They are run with
+      separate <code>HOME</code>s here; without that, whichever ran second is charged a 12-second rebuild that belongs to the
+      harness, not to the tool.</li>
+    <li><b>fastVEP here is 0.2.0</b>, an old fork — see the caveat on the Overview. These timings are not a read on current
+      fastVEP.</li>
+    <li><b>One host, one shape of input.</b> ${esc(p.host.cpu)}, ${p.host.ram_gb} GB RAM, batch annotation of a whole file.
+      Per-request latency for a server answering one variant at a time is a different measurement and is not shown here.</li>
+  </ul></div>`;
+  el.innerHTML = h;
+}
+
 function switchView(name){
   $$("#nav button").forEach(b => b.classList.toggle("active", b.dataset.view===name));
   $$(".view").forEach(v => v.classList.toggle("active", v.id===name));
   if(name==="browser") renderBrowser();
   else if(name==="compare") renderCompare();
+  else if(name==="perf") renderPerf();
   else if(name==="datahubdiff") renderDatahubDiff();
   else if(name==="download") renderDownloads();
   else if(name==="overrides") renderOverrides();
@@ -1007,7 +1125,7 @@ function setTrack(tr){
   if(tr===TRACK || !TRACKS[tr]) return;
   TRACK = tr; localStorage.setItem("track", tr);
   // reset all per-track caches
-  state.summary = state.byGene = state.byClass = state.variants = state.tref = null;
+  state.summary = state.byGene = state.byClass = state.variants = state.tref = state.perf = null;
   Object.keys(RENDERED).forEach(k => delete RENDERED[k]);
   Object.keys(txCache).forEach(k => delete txCache[k]);
   browser.page = 0; browser.filtered = []; browser.geneFilter = "";
@@ -1042,6 +1160,8 @@ async function boot(keepView){
     // Some tabs are GRCh37-specific; hide them on tracks without them.
     const isoBtn = $('#nav button[data-view="overrides"]');
     if(isoBtn) isoBtn.style.display = TRACKS[TRACK].hasIsoforms ? "" : "none";
+    const perfBtn = $('#nav button[data-view="perf"]');
+    if(perfBtn) perfBtn.style.display = TRACKS[TRACK].hasPerf ? "" : "none";
     const ddBtn = $('#nav button[data-view="datahubdiff"]');
     if(ddBtn) ddBtn.style.display = TRACKS[TRACK].hasDatahubDiff ? "" : "none";
     const [summary, byGene, byClass] = await Promise.all([
@@ -1057,7 +1177,8 @@ async function boot(keepView){
     const raw = (location.hash||"#overview").slice(1);
     const [start, sub] = raw.split("/");
     if(start==="browser" && sub) browser.pendingVk = decodeURIComponent(sub);
-    let target = cur || (["overview","classes","genes","browser","compare","datahubdiff","overrides","download","about"].includes(start)?start:"overview");
+    let target = cur || (["overview","classes","genes","browser","compare","perf","datahubdiff","overrides","download","about"].includes(start)?start:"overview");
+    if(target==="perf" && !TRACKS[TRACK].hasPerf) target = "overview";
     if(target==="overrides" && !TRACKS[TRACK].hasIsoforms) target = "overview";
     if(target==="datahubdiff" && !TRACKS[TRACK].hasDatahubDiff) target = "overview";
     switchView(target);
