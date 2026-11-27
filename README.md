@@ -108,10 +108,20 @@ reduces the raw TSV to `website/data/<track>/perf.json`.
 
 Method, and its limits:
 
-- Each tool is timed twice per repetition — on a 10-variant input (**startup**:
-  process launch plus transcript-index load) and on the full track input.
-  Annotation cost is the difference, so a tool is credited for the work it does
-  rather than for how its index happens to load.
+- **Annotating a file costs a fixed amount plus a per-variant amount**, and one
+  throughput number hides which you are paying. Each tool is timed at three
+  input sizes: 10 variants (**launch**), one variant per 1 Mb window the full
+  input touches — 381 of the 58,302 here (**index**), and the whole file
+  (**full**). The index point carries the same genomic footprint as the full
+  input, so `full - index` is per-variant work and nothing else.
+- **A ten-variant input is not enough to separate these.** A tool that loads its
+  transcript index lazily by region pays nothing for regions nobody asks about,
+  so ten variants understate its index cost by an order of magnitude and that
+  cost then lands silently in its per-variant rate. vep-rs does exactly this: it
+  reads a 1.1 GB JSON cache in 1 Mb windows, costs ~11 s of CPU to cover this
+  panel's footprint, and is then *cheaper* per variant than vibe-vep. An earlier
+  version of this page charged that index cost to its annotation rate and
+  reported it as 2.4x slower per variant, which was wrong.
 - The two vibe-vep builds are given separate `HOME`s. They share one
   `~/.vibe-vep` transcript cache and each invalidates the other's, so whichever
   ran second was being charged a 12 s rebuild that has nothing to do with it.
@@ -127,9 +137,6 @@ Method, and its limits:
   transcript, and `--pick` — and the report groups the rows by mode, because a
   tool emitting one consequence per variant is not doing the same work as one
   emitting all ~7.25.
-- **vep-rs loads its cache lazily, per chromosome**, so its startup column is
-  small and most of its index cost falls in the annotate column. The other tools
-  load a whole transcript index up front.
 - vibe-vep is listed three times: `main` and PR #17 with extra annotations off,
   which is the configuration this benchmark scores, and `main` in its default
   configuration, which also attaches SIFT/PolyPhen/ClinVar/AlphaMissense/gnomAD/

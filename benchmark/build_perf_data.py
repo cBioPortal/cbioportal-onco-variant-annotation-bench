@@ -1,8 +1,18 @@
 """Turn run_perf.sh's raw timings into website/data/<track>/perf.json.
 
-Each tool is timed on a 10-variant input (startup: process launch + transcript
-index load) and on the full track input. Annotation cost is the difference, so
-a tool is credited for the work it does rather than for how its index loads.
+Each tool is timed at three input sizes:
+
+  launch  ten variants in one or two places -- process start, nothing else
+  index   one variant per 1 Mb window the full input touches -- everything the
+          tool must load to cover the panel's footprint
+  full    the whole track input -- index cost plus per-variant work
+
+Subtracting `index` from `full` leaves per-variant work alone, which matters
+because a tool that loads its transcript index lazily by region pays nothing
+for regions it is not asked about. Timing such a tool on a handful of variants
+understates its index cost by an order of magnitude, and that cost then lands
+silently in its per-variant figure.
+
 Every figure is the median of the repetitions.
 """
 from __future__ import annotations
@@ -50,6 +60,8 @@ MODE = {
     "vibe_vep_annotated": "all",
 }
 
+PHASES = ("launch", "index", "full")
+
 
 def cpu_model() -> str:
     try:
@@ -83,7 +95,7 @@ def main() -> None:
     args = ap.parse_args()
 
     by: dict[tuple[str, str], dict[str, list[float]]] = {}
-    n_variants = 0
+    nv: dict[str, int] = {}
     reps: set[str] = set()
     with open(args.tsv) as fh:
         for r in csv.DictReader(fh, delimiter="\t"):
@@ -94,44 +106,58 @@ def main() -> None:
             d["wall"].append(float(r["wall_s"]))
             d["cpu"].append(float(r["user_s"]) + float(r["sys_s"]))
             d["rss"].append(float(r["maxrss_kb"]) / 1024)
-            n_variants = int(r["n_variants"])
+            nv[r["phase"]] = int(r["n_variants"])
             reps.add(r["rep"])
 
-    tools = sorted({t for t, _ in by}, key=lambda t: list(LABELS).index(t) if t in LABELS else 99)
+    n_full, n_index = nv.get("full", 0), nv.get("index", 0)
+    span = n_full - n_index
+    if span <= 0:
+        sys.exit("full and index inputs are the same size; nothing to subtract")
+
+    order = list(LABELS)
+    tools = sorted({t for t, _ in by}, key=lambda t: order.index(t) if t in order else 99)
     rows = []
     for t in tools:
-        s, f = by.get((t, "startup")), by.get((t, "full"))
-        if not f:
+        if (t, "full") not in by:
             continue
-        sw, sc = (med(s["wall"]), med(s["cpu"])) if s else (None, None)
-        fw, fc = med(f["wall"]), med(f["cpu"])
-        aw = fw - sw if sw is not None else None
-        ac = fc - sc if sc is not None else None
-        # A full run cheaper than a 10-variant run means the two were not doing
-        # the same work -- a stale index rebuilt on one of them, say. Refuse to
-        # publish a throughput derived from it.
-        if (aw is not None and aw <= 0) or (ac is not None and ac <= 0):
-            print(f"  !! {t}: full run cheaper than startup "
-                  f"(wall {fw:.2f} vs {sw:.2f}) -- throughput suppressed", file=sys.stderr)
+        g = {p: by.get((t, p)) for p in PHASES}
+        w = {p: (med(g[p]["wall"]) if g[p] else None) for p in PHASES}
+        c = {p: (med(g[p]["cpu"]) if g[p] else None) for p in PHASES}
+
+        per_wall = per_cpu = None
+        if w["index"] is not None and w["full"] is not None:
+            dw, dc = w["full"] - w["index"], c["full"] - c["index"]
+            # A full run no dearer than the footprint run means the two were not
+            # doing the same work -- a stale index rebuilt on one of them, say.
+            # Refuse to publish a per-variant cost derived from it.
+            if dw <= 0 or dc <= 0:
+                print(f"  !! {t}: full run no dearer than the index run "
+                      f"(wall {w['full']:.2f} vs {w['index']:.2f}) -- per-variant cost suppressed",
+                      file=sys.stderr)
+            else:
+                per_wall, per_cpu = dw / span * 1e6, dc / span * 1e6
+
         rows.append({
             "tool": t,
             "label": LABELS.get(t, t),
             "output": OUTPUT.get(t, ""),
             "mode": MODE.get(t, ""),
-            "startup_wall_s": sw,
-            "startup_cpu_s": sc,
-            "full_wall_s": fw,
-            "full_cpu_s": fc,
-            "annot_wall_s": aw,
-            "annot_cpu_s": ac,
-            "maxrss_mb": med(f["rss"]),
-            "variants_per_s": (n_variants / aw) if aw and aw > 0 else None,
-            "cpu_us_per_variant": (ac * 1e6 / n_variants) if ac and ac > 0 else None,
-            "wall_runs": sorted(f["wall"]),
+            "launch_wall_s": w["launch"],
+            "index_wall_s": w["index"],
+            "index_cpu_s": c["index"],
+            "full_wall_s": w["full"],
+            "full_cpu_s": c["full"],
+            "per_variant_wall_us": per_wall,
+            "per_variant_cpu_us": per_cpu,
+            "variants_per_s": (1e6 / per_wall) if per_wall else None,
+            "maxrss_mb": med(g["full"]["rss"]),
+            "wall_runs": sorted(g["full"]["wall"]),
         })
 
     payload = {
-        "n_variants": n_variants,
+        "n_variants": n_full,
+        "n_index_variants": n_index,
+        "n_launch_variants": nv.get("launch", 0),
         "reps": len(reps),
         "host": {
             "cpu": cpu_model(),
@@ -144,7 +170,8 @@ def main() -> None:
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload))
-    print(f"wrote {out} ({len(rows)} tools, {len(reps)} reps, {n_variants:,} variants)")
+    print(f"wrote {out} ({len(rows)} tools, {len(reps)} reps, "
+          f"index={n_index:,} full={n_full:,} variants)")
 
 
 if __name__ == "__main__":
